@@ -46,14 +46,14 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #e7
   border-bottom:1px solid rgba(195,153,255,.31);
   box-shadow:0 12px 28px rgba(0,0,0,.46),inset 0 -1px 0 rgba(255,255,255,.04);
   backdrop-filter:blur(18px); }
-.header-inner { width:min(1100px,100%); height:100%; padding:0 clamp(16px,3vw,40px); margin:0 auto;
+.header-inner { width:100%; height:100%; padding:0 clamp(16px,3vw,40px); margin:0 auto;
   display:grid; grid-template-columns:48px minmax(0,1fr) 48px; align-items:center; gap:12px; }
 .icon-button { width:44px; height:44px; display:grid; place-items:center; border-radius:12px;
   border:1px solid transparent; background:transparent; }
 .icon-button:hover { background:#ffffff12; border-color:#a47ed255; }
 .icon-button svg { width:25px; height:25px; fill:none; stroke:#ebd7ff; stroke-width:2; stroke-linecap:round; }
 .brand { justify-self:center; width:min(275px,100%); display:block; }
-.brand img { width:100%; height:auto; max-height:78px; object-fit:contain; display:block; }
+.brand img { height:auto; max-height:78px; object-fit:contain; display:block; }
 .settings-panel { position:absolute; top:calc(var(--header-height) + 9px); left:max(14px,calc((100% - 1100px)/2 + 32px));
   z-index:16; width:min(315px,calc(100vw - 28px)); padding:18px; border:1px solid var(--stroke);
   border-radius:18px; background:#170e2af2; box-shadow:0 20px 60px #000b; backdrop-filter:blur(18px); }
