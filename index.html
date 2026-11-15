@@ -23,6 +23,7 @@
     <div class="nebula-front"></div>
   </div>
   <canvas id="webgl" aria-label="Интерактивная 3D-галактика с планетами"></canvas>
+  <button type="button" id="explore" class="galaxy-entry" aria-label="Войти в галактику GENESIS-01" title="Войти в галактику"></button>
   <div id="planet-labels" aria-label="Ники планет"></div>
 
   <header class="site-header">
@@ -51,13 +52,11 @@
     <div class="hero-heading">
       <p class="eyebrow">ГАЛАКТИКА 01</p>
       <h1 id="galaxy-title">GENESIS-01</h1>
-      <p class="hero-subtitle">Твоя вселенная начинается здесь</p>
     </div>
     <div class="counts" aria-label="Статистика галактики">
-      <span class="pill"><strong id="planetCount">100</strong> планет</span>
-      <span class="pill"><strong>1</strong> галактика</span>
+      <span class="pill"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="15" r="6"/><ellipse cx="14" cy="15" rx="13" ry="5" transform="rotate(-25 14 15)"/></svg><strong id="planetCount">100</strong> планет</span>
+      <span class="pill"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 16C7 5 2 18 9 24c11 9 23-9 11-17-8-6-22 2-17 16"/></svg><strong>1</strong> галактика</span>
     </div>
-    <button id="explore" class="primary-button" type="button">Исследовать галактику <span aria-hidden="true">→</span></button>
   </section>
 
   <div class="scene-bar" aria-label="Навигация в галактике">
@@ -71,12 +70,17 @@
   <p class="scene-hint">Перемещай сцену пальцем или мышью · масштабируй двумя пальцами</p>
 
   <section class="footer" aria-labelledby="create-title">
-    <div class="footer-icon" aria-hidden="true">✧</div>
+    <svg class="footer-planet" viewBox="0 0 88 70" aria-hidden="true">
+      <circle cx="37" cy="35" r="20"/>
+      <ellipse cx="37" cy="35" rx="38" ry="13" transform="rotate(-25 37 35)"/>
+    </svg>
+    <div class="footer-rule" aria-hidden="true"></div>
     <div class="footer-copy">
       <h2 id="create-title">Создай свою планету</h2>
       <p>Подпишись на наш Instagram и оставь комментарий с описанием своей планеты. Она появится в нашей вселенной.</p>
     </div>
-    <button type="button" id="createHelp" class="footer-action" aria-haspopup="dialog">Как создать</button>
+    <button type="button" id="createHelp" class="footer-open"
+      aria-label="Как создать свою планету — открыть инструкцию" aria-haspopup="dialog"></button>
   </section>
 
   <section class="search dialog-overlay" id="search" role="dialog" aria-modal="true"
