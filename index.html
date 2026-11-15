@@ -1,168 +1,129 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
-    <title>
-        YOUR UNIVERSE — Hybrid Galaxy
-    </title>
-    <link href="styles/main.css" rel="stylesheet"/>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0c0817">
+  <meta name="description" content="INFINIVERSE — интерактивная галактика, где у каждого участника есть своя планета. Исследуй GENESIS-01 и найди свой мир.">
+  <meta property="og:title" content="INFINIVERSE — твоя планета в галактике">
+  <meta property="og:description" content="Исследуй интерактивную галактику GENESIS-01 и найди свою планету.">
+  <meta property="og:type" content="website">
+  <title>INFINIVERSE — исследуй свою галактику</title>
+  <link rel="icon" type="image/svg+xml" href="assets/branding/infiniverse_favicon.svg">
+  <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
 <main id="app">
-    <div id="star-background" aria-hidden="true"></div>
-    <div class="art-area" id="art-area">
-        <div class="nebula-haze">
-        </div>
-        <div class="float-galaxy a">
-        </div>
-        <div class="float-galaxy b">
-        </div>
-        <div class="galaxy-frame">
-            <img alt="Спиральная галактика GENESIS-01" id="galaxy-art" src="assets/galaxy/galaxy_core.png"/>
-        </div>
-        <div class="glow-core">
-        </div>
-        <div class="nebula-front">
-        </div>
-</div>
-    <canvas id="webgl"></canvas>
-    <div id="planet-labels" aria-label="Подписи планет"></div>
-<div id="settings-panel" class="settings-panel" hidden>
-        <div class="settings-title">Настройки отображения</div>
-        <label class="settings-option">
-            <span>Включить анимацию</span>
-            <input type="checkbox" id="animation-toggle" checked>
-            <span class="settings-switch" aria-hidden="true"></span>
-        </label>
-        <label class="settings-option">
-            <span>Включить ники</span>
-            <input type="checkbox" id="labels-toggle" checked>
-            <span class="settings-switch" aria-hidden="true"></span>
-        </label>
+  <div id="star-background" aria-hidden="true"></div>
+  <div class="art-area" id="art-area" aria-hidden="true">
+    <div class="nebula-haze"></div>
+    <div class="galaxy-frame">
+      <img id="galaxy-art" src="assets/galaxy/galaxy_core.png" alt="">
     </div>
-    <div class="hud">
-        <div class="toprow">
-            <button aria-label="Настройки" aria-controls="settings-panel" aria-expanded="false" class="icon" id="menu">
-                <svg viewbox="0 0 32 32">
-                    <path d="M4 8h24M4 16h24M4 24h24">
-                    </path>
-                </svg>
-            </button>
-            <div class="brand">
-                <img src="assets/branding/infiniverse_logo_variant_3.svg"
-                     alt="INFINIVERSE" width="1600" height="520" decoding="async"/>
-            </div>
-            <button aria-label="Поиск планеты" class="icon" id="searchBtn">
-                <svg viewbox="0 0 32 32">
-                    <circle cx="14" cy="14" r="10">
-                    </circle>
-                    <path d="m22 22 7 7">
-                    </path>
-                </svg>
-            </button>
-        </div>
-<div class="counts">
-            <div class="pill">
-                <svg viewbox="0 0 32 32">
-                    <circle cx="15" cy="15" r="7">
-                    </circle>
-                    <ellipse cx="15" cy="15" rx="15" ry="5" transform="rotate(-23 15 15)">
-                    </ellipse>
-                </svg>
-                <span>
-       <strong>
-        100
-       </strong>
-       планет
-      </span>
-            </div>
-            <div class="pill">
-                <svg viewbox="0 0 32 32">
-                    <path d="M16 16c-5-4 0-10 5-7 11 9-2 23-14 16-13-8-5-24 7-24 17 0 20 23 8 29">
-                    </path>
-                </svg>
-                <span>
-       <strong>
-        1
-       </strong>
-       галактика
-      </span>
-            </div>
-        </div>
+    <div class="nebula-front"></div>
+  </div>
+  <canvas id="webgl" aria-label="Интерактивная 3D-галактика с планетами"></canvas>
+  <div id="planet-labels" aria-label="Ники планет"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <button class="icon-button" id="menu" type="button"
+        aria-label="Настройки отображения" aria-controls="settings-panel" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <a class="brand" href="./" aria-label="INFINIVERSE — главный экран">
+        <img src="assets/branding/infiniverse_logo_variant_3.svg" alt="INFINIVERSE"
+          width="1600" height="520" decoding="async">
+      </a>
+      <button class="icon-button" id="searchBtn" type="button" aria-label="Найти планету">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+      </button>
     </div>
-    <div class="chip" id="modeTitle">
-        GENESIS-01 · 100 уникальных планет
+  </header>
+
+  <div id="settings-panel" class="settings-panel" hidden>
+    <strong>Настройки отображения</strong>
+    <label class="settings-option"><span>Включить анимацию</span><input type="checkbox" id="animation-toggle" checked><span class="switch" aria-hidden="true"></span></label>
+    <label class="settings-option"><span>Включить ники</span><input type="checkbox" id="labels-toggle" checked><span class="switch" aria-hidden="true"></span></label>
+  </div>
+
+  <section class="hero" aria-labelledby="galaxy-title">
+    <div class="hero-heading">
+      <p class="eyebrow">ГАЛАКТИКА 01</p>
+      <h1 id="galaxy-title">GENESIS-01</h1>
+      <p class="hero-subtitle">Твоя вселенная начинается здесь</p>
     </div>
-    <div class="zoom">
-        <button aria-label="Приблизить" id="plus">
-            +
-        </button>
-        <button aria-label="Отдалить" id="minus">
-            −
-        </button>
+    <div class="counts" aria-label="Статистика галактики">
+      <span class="pill"><strong id="planetCount">100</strong> планет</span>
+      <span class="pill"><strong>1</strong> галактика</span>
     </div>
-    <div class="hint">
-        Нажми + или найди планету по нику
+    <button id="explore" class="primary-button" type="button">Исследовать галактику <span aria-hidden="true">→</span></button>
+  </section>
+
+  <div class="scene-bar" aria-label="Навигация в галактике">
+    <button type="button" id="sceneBack" class="secondary-button">← К галактике</button>
+    <span class="scene-caption">GENESIS-01 <span aria-hidden="true">·</span> 3D-пространство</span>
+  </div>
+  <div class="zoom" aria-label="Масштаб сцены">
+    <button type="button" id="plus" aria-label="Приблизить">+</button>
+    <button type="button" id="minus" aria-label="Отдалить">−</button>
+  </div>
+  <p class="scene-hint">Перемещай сцену пальцем или мышью · масштабируй двумя пальцами</p>
+
+  <section class="footer" aria-labelledby="create-title">
+    <div class="footer-icon" aria-hidden="true">✧</div>
+    <div class="footer-copy">
+      <h2 id="create-title">Создай свою планету</h2>
+      <p>Подпишись на наш Instagram и оставь комментарий с описанием своей планеты. Она появится в нашей вселенной.</p>
     </div>
-    <div class="footer">
-        <svg viewbox="0 0 88 70">
-            <circle cx="37" cy="35" r="20">
-            </circle>
-            <ellipse cx="37" cy="35" rx="38" ry="13" transform="rotate(-25 37 35)">
-            </ellipse>
-            <path d="M71 48v20M61 58h20">
-            </path>
-        </svg>
-        <div class="rule">
-        </div>
-        <div class="footer-copy">
-            <h2>Создай свою планету</h2>
-            <p>Подпишись на наш Instagram и оставь комментарий с описанием своей планеты. Она появится в нашей вселенной.</p>
-        </div>
+    <button type="button" id="createHelp" class="footer-action" aria-haspopup="dialog">Как создать</button>
+  </section>
+
+  <section class="search dialog-overlay" id="search" role="dialog" aria-modal="true"
+    aria-labelledby="search-title" hidden>
+    <div class="dialog-panel">
+      <button class="close-button" id="closeSearch" type="button" aria-label="Закрыть поиск">×</button>
+      <p class="eyebrow">ПОИСК ВО ВСЕЛЕННОЙ</p>
+      <h2 id="search-title">Найди свою планету</h2>
+      <label for="query">Ник, название или номер планеты</label>
+      <div class="search-field">
+        <input id="query" type="search" autocomplete="off" spellcheck="false"
+          placeholder="Например, @astro_fox1" aria-describedby="searchCount">
+      </div>
+      <p id="searchCount" class="search-count" aria-live="polite"></p>
+      <div id="results" class="searchresults"></div>
     </div>
-    <div class="search" id="search">
-        <div class="searchpanel">
-            <button class="close" id="closeSearch">
-                ×
-            </button>
-            <h2>
-                Найти свою планету
-            </h2>
-            <input autocomplete="off" id="query" placeholder="@astro_fox1 или @luna_wave1"/>
-            <div class="searchresults" id="results">
-            </div>
-        </div>
+  </section>
+
+  <section class="help dialog-overlay" id="help" role="dialog" aria-modal="true"
+    aria-labelledby="help-title" hidden>
+    <div class="dialog-panel">
+      <button class="close-button" id="closeHelp" type="button" aria-label="Закрыть инструкцию">×</button>
+      <p class="eyebrow">СТАНЬ ЧАСТЬЮ INFINIVERSE</p>
+      <h2 id="help-title">Как создать планету</h2>
+      <ol class="steps">
+        <li>Подпишись на Instagram проекта.</li>
+        <li>Оставь комментарий с названием и описанием своей планеты.</li>
+        <li>Когда планета будет добавлена, найди её по своему нику.</li>
+      </ol>
+      <p class="help-note">Ссылка на аккаунт Instagram пока не указана в проекте. Её нужно добавить перед запуском записи новых участников.</p>
     </div>
-    <div class="detail" id="detail">
-        <button class="x" id="closeDetail">
-            ×
-        </button>
-        <small id="planetId">
-            ПЛАНЕТА #001
-        </small>
-        <h2 id="planetName">
-        </h2>
-        <small id="planetUser">
-        </small>
-        <p id="planetDescription">
-        </p>
-        <div id="planetStatus" style="color:#cca6e6;font-size:13px">
-        </div>
-        <button id="statusBtn">
-            Изменить статус
-        </button>
-        <button id="goBack">
-            Назад
-        </button>
-    </div>
-    <div class="error" id="error">
-    </div>
+  </section>
+
+  <aside class="detail" id="detail" aria-labelledby="planetName" hidden>
+    <button class="close-button" id="closeDetail" type="button" aria-label="Закрыть карточку">×</button>
+    <small id="planetId"></small>
+    <h2 id="planetName"></h2>
+    <p id="planetUser" class="planet-user"></p>
+    <p id="planetDescription"></p>
+    <p id="planetStatus" class="planet-status"></p>
+    <button id="goBack" type="button" class="secondary-button">К обзору планет</button>
+  </aside>
+
+  <div id="error" class="error" role="alert" hidden></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </main>
-<script src="data/planets.js">
-</script>
-<script src="scripts/scene.js" type="module">
-</script>
+<script src="data/planets.js"></script>
+<script src="scripts/scene.js" type="module"></script>
 </body>
 </html>
-
