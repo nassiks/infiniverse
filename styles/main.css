@@ -93,7 +93,7 @@ button {
   position:absolute;
   left:50%;
   top:50%;
-  width:min(105vh,105vw);
+  width:min(95vh,98vw);
   aspect-ratio:1;
   transform:translate(-50%,-50%) scale(1.32);
   background:url('../assets/galaxy/nebula_haze.png') center/contain no-repeat;
@@ -106,7 +106,7 @@ button {
   position:absolute;
   left:50%;
   top:49%;
-  width:min(92vw,88vh);
+  width:min(82vw,76vh);
   aspect-ratio:1;
   transform:translate(-50%,-50%);
   filter:drop-shadow(0 0 25px #9e52ec88);
@@ -691,7 +691,7 @@ button {
 }
 
 .galaxy-frame {
-  width:min(98vw,73vh);
+  width:min(87vw,65vh);
 }
 
 .nebula-haze {
@@ -801,3 +801,53 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .flash.go, #app.warping .flash::before { animation: none; }
 }
+
+/* Burger settings */
+.settings-panel {
+  position: absolute; z-index: 16; top: clamp(65px, 9vh, 100px);
+  left: clamp(12px, 4vw, 47px); width: min(310px, calc(100vw - 24px));
+  padding: 17px; border: 1px solid #bc8af0; border-radius: 18px;
+  background: #150a2bf0; box-shadow: 0 12px 36px #0008, 0 0 22px #924bd366;
+  backdrop-filter: blur(16px);
+}
+.settings-panel[hidden] { display: none !important; }
+.settings-title { font-size: 15px; color: #f0d8ff; margin-bottom: 12px; }
+.settings-option {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; min-height: 51px; font-size: 14px; cursor: pointer;
+}
+.settings-option + .settings-option { border-top: 1px solid #9971b844; }
+.settings-option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.settings-switch {
+  position: relative; width: 43px; height: 24px; flex: none;
+  border-radius: 20px; background: #514064; border: 1px solid #aa82c9;
+  transition: background .2s;
+}
+.settings-switch::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #eee4f8; transition: transform .2s;
+}
+.settings-option input:checked + .settings-switch { background: #874dd4; }
+.settings-option input:checked + .settings-switch::after { transform: translateX(19px); }
+.settings-option input:focus-visible + .settings-switch {
+  outline: 2px solid white; outline-offset: 3px;
+}
+/* Reverse warp */
+#app.exiting .art-area { opacity: 1 !important; filter: none !important; }
+#app.exiting #webgl { opacity: 0; }
+#app.exiting #planet-labels { opacity: 0; pointer-events: none; }
+/* Stored animation / label preferences */
+#app.animations-off .galaxy-frame,
+#app.animations-off .nebula-haze,
+#app.animations-off .nebula-front,
+#app.animations-off .glow-core,
+#app.animations-off #star-background,
+#app.animations-off .flash.go,
+#app.animations-off .flash::before { animation: none !important; }
+#app.animations-off .art-area,
+#app.animations-off #webgl,
+#app.animations-off #planet-labels { transition: none !important; }
+#app.labels-off #planet-labels { display: none !important; }
+/* Remove decorative partial planet at the bottom. */
+.edge-horizon { display: none !important; }

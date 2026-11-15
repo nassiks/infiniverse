@@ -80,6 +80,37 @@ import { vs, fs } from './shaders.js';
     const artArea = document.getElementById('art-area');
     const labelLayer = document.getElementById('planet-labels');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const BOUNDS = { x: 170, y: 95, minZ: -170, maxZ: 240 };
+    const menuButton = document.getElementById('menu');
+    const settingsPanel = document.getElementById('settings-panel');
+    const animationToggle = document.getElementById('animation-toggle');
+    const labelsToggle = document.getElementById('labels-toggle');
+
+    function readSetting(key) {
+        try { return localStorage.getItem(key) !== 'false'; }
+        catch { return true; }
+    }
+    function saveSetting(key, value) {
+        try { localStorage.setItem(key, String(value)); }
+        catch { /* Private browsing may disable storage. */ }
+    }
+    let animationsEnabled = readSetting('infiniverse.animations');
+    let labelsEnabled = readSetting('infiniverse.labels');
+    animationToggle.checked = animationsEnabled;
+    labelsToggle.checked = labelsEnabled;
+    app.classList.toggle('animations-off', !animationsEnabled);
+    app.classList.toggle('labels-off', !labelsEnabled);
+    function clampCamera(p) {
+        return {
+            x: Math.max(-BOUNDS.x, Math.min(BOUNDS.x, p.x)),
+            y: Math.max(-BOUNDS.y, Math.min(BOUNDS.y, p.y)),
+            z: Math.max(BOUNDS.minZ, Math.min(BOUNDS.maxZ, p.z))
+        };
+    }
+    function closeSettings() {
+        settingsPanel.hidden = true;
+        menuButton.setAttribute('aria-expanded', 'false');
+    }
 
     function resize() {
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -105,7 +136,7 @@ import { vs, fs } from './shaders.js';
         const x = w / 2 + (p.world.x - cam.x) * FOCAL / dz * h / 2;
         const y = h / 2 - (p.world.y - cam.y) * FOCAL / dz * h / 2;
         const size = p.radius * FOCAL / dz * h / 2;
-        return { x, y, size };
+        return { x, y, size, depth: dz };
     }
 
     const labels = planets.map((planet, index) => {
@@ -120,30 +151,60 @@ import { vs, fs } from './shaders.js';
     });
 
     function updateLabels() {
+        if (!inside || !labelsEnabled) {
+            labels.forEach(label => { label.hidden = true; });
+            return;
+        }
+        const projected = planets.map(projection);
         labels.forEach((label, index) => {
-            const point = projection(planets[index]);
-            const visible = inside && point && point.size >= 3 &&
-                point.x > -20 && point.x < w + 20 &&
-                point.y > -20 && point.y < h + 20;
-            label.hidden = !visible;
-            if (!visible) return;
-            label.style.transform = 'translate3d(' + point.x + 'px,' +
-                (point.y - point.size - 10) + 'px,0) translate(-50%,-100%)';
+            const p = projected[index];
+            const visible = p && p.size >= 3 && p.x > -20 && p.x < w + 20 &&
+                p.y > -20 && p.y < h + 20;
+            if (!visible) { label.hidden = true; return; }
+
+            const bottom = p.y - p.size - 10;
+            const top = bottom - 24;
+            const halfWidth = Math.max(36, label.textContent.length * 3.6 + 10);
+            const left = p.x - halfWidth;
+            const right = p.x + halfWidth;
+
+            // HTML labels have no GPU depth test. Hide their rectangle when
+            // intersected by the visible disc of a nearer 3D sphere.
+            const covered = projected.some((near, i) => {
+                if (i === index || !near) return false;
+                if (near.depth - planets[i].radius >= p.depth) return false;
+                const x = Math.max(left, Math.min(near.x, right));
+                const y = Math.max(top, Math.min(near.y, bottom));
+                const dx = near.x - x;
+                const dy = near.y - y;
+                return dx * dx + dy * dy < (near.size + 2) ** 2;
+            });
+            label.hidden = covered;
+            if (covered) return;
+            label.style.transform = 'translate3d(' + p.x + 'px,' +
+                bottom + 'px,0) translate(-50%,-100%)';
             label.classList.toggle('selected', index === selection);
         });
+    }
+
+    function flashTransition() {
+        flash.classList.remove('go');
+        void flash.offsetWidth;
+        if (animationsEnabled && !reducedMotion.matches) flash.classList.add('go');
     }
 
     function enter() {
         if (inside || transitioning) return;
         transitioning = true;
-        app.classList.add('warping');
+        closeSettings();
         detail.classList.remove('open');
-        artArea.style.transition = 'transform 1.65s cubic-bezier(.12,.68,.12,1), opacity 1.1s';
-        artArea.style.transform = 'scale(8) rotate(22deg)';
-        flash.classList.remove('go');
-        void flash.offsetWidth;
-        flash.classList.add('go');
-        const duration = reducedMotion.matches ? 0 : 970;
+        const animated = animationsEnabled && !reducedMotion.matches;
+        if (animated) {
+            app.classList.add('warping');
+            artArea.style.transition = 'transform 1.1s cubic-bezier(.12,.7,.12,1), opacity .7s';
+            artArea.style.transform = 'scale(7) rotate(18deg)';
+        }
+        flashTransition();
         setTimeout(() => {
             inside = true;
             transitioning = false;
@@ -157,24 +218,41 @@ import { vs, fs } from './shaders.js';
                 pendingFocus = null;
                 focus(index);
             }
-        }, duration);
-        setTimeout(() => app.classList.remove('warping'), duration + 450);
+        }, animated ? 560 : 0);
+        setTimeout(() => app.classList.remove('warping'), animated ? 1150 : 0);
     }
 
     function exit() {
         if (!inside || transitioning) return;
-        inside = false;
+        transitioning = true;
+        closeSettings();
         selection = null;
         pendingFocus = null;
-        app.classList.remove('inside', 'warping');
         detail.classList.remove('open');
-        labels.forEach(label => label.hidden = true);
-        document.getElementById('subtitle').textContent = 'Стадия 3 — Появилась галактика';
-        document.getElementById('modeTitle').textContent = 'GENESIS-01 · 100 уникальных планет';
-        artArea.style.transition = 'none';
-        artArea.style.transform = 'scale(1)';
-        void artArea.offsetWidth;
-        artArea.style.transition = '';
+        labels.forEach(label => { label.hidden = true; });
+
+        const animated = animationsEnabled && !reducedMotion.matches;
+        if (animated) {
+            app.classList.add('exiting');
+            artArea.style.transition = 'none';
+            artArea.style.transform = 'scale(7) rotate(18deg)';
+            void artArea.offsetWidth;
+            artArea.style.transition = 'transform 1.1s cubic-bezier(.2,.5,.15,1), opacity .7s';
+            artArea.style.transform = 'scale(1)';
+            flashTransition();
+        }
+        setTimeout(() => {
+            inside = false;
+            app.classList.remove('inside');
+            document.getElementById('subtitle').textContent = 'Стадия 3 — Появилась галактика';
+            document.getElementById('modeTitle').textContent = 'GENESIS-01 · 100 уникальных планет';
+        }, animated ? 560 : 0);
+        setTimeout(() => {
+            app.classList.remove('exiting');
+            artArea.style.transition = '';
+            artArea.style.transform = 'scale(1)';
+            transitioning = false;
+        }, animated ? 1150 : 0);
     }
 
     function focus(index) {
@@ -188,7 +266,7 @@ import { vs, fs } from './shaders.js';
         const p = planets[index];
         selection = index;
         const distance = Math.max(38, p.radius * (w < 650 ? 9 : 7));
-        goal = { x: p.world.x, y: p.world.y, z: p.world.z + distance };
+        goal = clampCamera({ x: p.world.x, y: p.world.y, z: p.world.z + distance });
         document.getElementById('planetId').textContent =
             'ПЛАНЕТА #' + String(p.id).padStart(3, '0') + ' · GENESIS-01';
         document.getElementById('planetName').textContent = p.name;
@@ -209,8 +287,10 @@ import { vs, fs } from './shaders.js';
             requestAnimationFrame(draw);
             return;
         }
+        goal = clampCamera(goal);
         for (let k of ['x', 'y', 'z'])
-            cam[k] += (goal[k] - cam[k]) * .055;
+            cam[k] += (goal[k] - cam[k]) * (animationsEnabled ? .055 : 1);
+        cam = clampCamera(cam);
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
@@ -231,7 +311,7 @@ import { vs, fs } from './shaders.js';
                 continue;
             gl.uniform3f(uniforms.uLocation, p.world.x, p.world.y, p.world.z);
             gl.uniform1f(uniforms.uSize, p.radius * (selection === i ? 1.15 : 1));
-            gl.uniform1f(uniforms.uSpin, p.spin + ms * p.speed);
+            gl.uniform1f(uniforms.uSpin, p.spin + (animationsEnabled ? ms * p.speed : 0));
             gl.uniform2f(uniforms.uTile, i % 10, Math.floor(i / 10));
             gl.uniform1f(uniforms.uActive, p.active ? 1 : 0);
             gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
@@ -247,13 +327,35 @@ import { vs, fs } from './shaders.js';
             if (delta > 0) enter();
             return;
         }
-        goal.z = Math.min(255, Math.max(-60, goal.z - delta));
-        if (delta < 0 && goal.z >= 250) exit();
+        if (delta < 0 && goal.z - delta >= 232) { exit(); return; }
+        goal = clampCamera({ ...goal, z: goal.z - delta });
     }
 
     document.getElementById('plus').onclick = () => zoom(8);
     document.getElementById('minus').onclick = () => zoom(-8);
-    document.getElementById('menu').onclick = () => inside ? exit() : enter();
+    menuButton.onclick = () => {
+        const open = settingsPanel.hidden;
+        settingsPanel.hidden = !open;
+        menuButton.setAttribute('aria-expanded', String(open));
+    };
+    animationToggle.onchange = () => {
+        animationsEnabled = animationToggle.checked;
+        app.classList.toggle('animations-off', !animationsEnabled);
+        saveSetting('infiniverse.animations', animationsEnabled);
+    };
+    labelsToggle.onchange = () => {
+        labelsEnabled = labelsToggle.checked;
+        app.classList.toggle('labels-off', !labelsEnabled);
+        saveSetting('infiniverse.labels', labelsEnabled);
+        if (!labelsEnabled) labels.forEach(label => { label.hidden = true; });
+    };
+    document.addEventListener('pointerdown', event => {
+        if (!settingsPanel.hidden && !settingsPanel.contains(event.target) &&
+            !menuButton.contains(event.target)) closeSettings();
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeSettings();
+    });
     document.getElementById('goBack').onclick = () => {
         selection = null;
         detail.classList.remove('open');
@@ -304,8 +406,9 @@ import { vs, fs } from './shaders.js';
         const dy = event.clientY - lastPoint.y;
         if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
         const speed = 0.023 * Math.max(20, Math.abs(cam.z)) / 42;
-        goal.x -= dx * speed;
-        goal.y += dy * speed;
+        goal = clampCamera({
+            ...goal, x: goal.x - dx * speed, y: goal.y + dy * speed
+        });
         lastPoint = { x: event.clientX, y: event.clientY };
     });
 
