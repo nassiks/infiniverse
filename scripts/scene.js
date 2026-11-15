@@ -155,36 +155,71 @@ import { vs, fs } from './shaders.js';
             labels.forEach(label => { label.hidden = true; });
             return;
         }
+
+        // The projection depth orders HTML usernames even though HTML itself
+        // cannot participate in the WebGL depth buffer.
         const projected = planets.map(projection);
+        const candidates = [];
+
         labels.forEach((label, index) => {
             const p = projected[index];
-            const visible = p && p.size >= 3 && p.x > -20 && p.x < w + 20 &&
-                p.y > -20 && p.y < h + 20;
-            if (!visible) { label.hidden = true; return; }
+            if (!p || p.size < 3 ||
+                p.x < -20 || p.x > w + 20 ||
+                p.y < -20 || p.y > h + 20) {
+                label.hidden = true;
+                return;
+            }
 
+            // Use the actual label dimensions, not an estimated text width.
+            const width = label.offsetWidth || Math.max(72, label.textContent.length * 8);
+            const height = label.offsetHeight || 24;
             const bottom = p.y - p.size - 10;
-            const top = bottom - 24;
-            const halfWidth = Math.max(36, label.textContent.length * 3.6 + 10);
-            const left = p.x - halfWidth;
-            const right = p.x + halfWidth;
+            const bounds = {
+                left: p.x - width / 2,
+                right: p.x + width / 2,
+                top: bottom - height,
+                bottom
+            };
+            candidates.push({ index, p, label, bounds, bottom });
+        });
 
-            // HTML labels have no GPU depth test. Hide their rectangle when
-            // intersected by the visible disc of a nearer 3D sphere.
-            const covered = projected.some((near, i) => {
+        // Prefer nearer usernames; a distant username must never paint over
+        // a closer one. Stable index ordering makes ties deterministic.
+        candidates.sort((a, b) => a.p.depth - b.p.depth || a.index - b.index);
+        const accepted = [];
+
+        for (const item of candidates) {
+            const { p, label, bounds, index, bottom } = item;
+
+            // Hide behind the visible circular silhouette of a closer planet.
+            const behindPlanet = projected.some((near, i) => {
                 if (i === index || !near) return false;
                 if (near.depth - planets[i].radius >= p.depth) return false;
-                const x = Math.max(left, Math.min(near.x, right));
-                const y = Math.max(top, Math.min(near.y, bottom));
-                const dx = near.x - x;
-                const dy = near.y - y;
+                const cx = Math.max(bounds.left, Math.min(near.x, bounds.right));
+                const cy = Math.max(bounds.top, Math.min(near.y, bounds.bottom));
+                const dx = near.x - cx;
+                const dy = near.y - cy;
                 return dx * dx + dy * dy < (near.size + 2) ** 2;
             });
-            label.hidden = covered;
-            if (covered) return;
+
+            // Also hide when a label intersects an already placed (nearer)
+            // username. Both rules apply regardless of DOM insertion order.
+            const behindLabel = accepted.some(front =>
+                bounds.left < front.right &&
+                bounds.right > front.left &&
+                bounds.top < front.bottom &&
+                bounds.bottom > front.top
+            );
+
+            const show = !behindPlanet && !behindLabel;
+            label.hidden = !show;
+            if (!show) continue;
+
             label.style.transform = 'translate3d(' + p.x + 'px,' +
                 bottom + 'px,0) translate(-50%,-100%)';
             label.classList.toggle('selected', index === selection);
-        });
+            accepted.push(bounds);
+        }
     }
 
     // Both layers crossfade over the same duration. Keep rendering WebGL
