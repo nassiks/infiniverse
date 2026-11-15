@@ -851,3 +851,106 @@ button {
 #app.labels-off #planet-labels { display: none !important; }
 /* Remove decorative partial planet at the bottom. */
 .edge-horizon { display: none !important; }
+
+
+/* =========================================================
+   Seamless galaxy crossfade (without flash or glow).
+   Both the outer 2.5D artwork and WebGL are composited at
+   the same time. Entering and exiting are symmetrical.
+   ========================================================= */
+:root { --galaxy-transition-duration: 1050ms; }
+
+.art-area {
+    transition:
+        opacity var(--galaxy-transition-duration) ease-in-out,
+        transform var(--galaxy-transition-duration) cubic-bezier(.25,.1,.25,1);
+    filter: none;
+    transform: scale(1);
+    opacity: 1;
+}
+
+#app.inside .art-area,
+#app.entering .art-area {
+    opacity: 0;
+    transform: scale(1.28);
+    filter: none;
+}
+
+/* Override the previous exit style with an animated reverse zoom. */
+#app.exiting .art-area {
+    opacity: 1 !important;
+    transform: scale(1);
+    filter: none !important;
+}
+
+#webgl {
+    transition: opacity var(--galaxy-transition-duration) ease-in-out;
+}
+#app.inside #webgl,
+#app.entering #webgl {
+    opacity: 1;
+    pointer-events: auto;
+}
+#app.exiting #webgl {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Keep labels out of the layer crossfade, so text never floats in empty space. */
+#app.entering #planet-labels,
+#app.exiting #planet-labels {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* No bright orbit, bloom, core flare or radial starburst at either direction. */
+.flash,
+.glow-core { display: none !important; }
+.galaxy-frame,
+#app.warping .galaxy-frame {
+    filter: none !important;
+}
+#app.entering .nebula-haze,
+#app.exiting .nebula-haze { filter: none; }
+
+/* Main screen has counters without an additional 'stage' row. */
+.subtitle { display: none !important; }
+
+/* New two-level CTA. */
+.footer {
+    gap: clamp(12px, 2vw, 20px);
+    min-height: 116px;
+}
+.footer-copy {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.footer-copy h2 {
+    margin: 0 0 7px;
+    font-size: clamp(18px, 2.3vw, 25px);
+    font-weight: 650;
+    letter-spacing: .01em;
+    line-height: 1.15;
+}
+.footer-copy p {
+    margin: 0;
+    font-size: clamp(12px, 1.4vw, 15px);
+    line-height: 1.45;
+    color: #e1ccee;
+}
+@media (max-width: 600px) {
+    .footer { min-height: 96px; padding: 12px 14px; gap: 10px; }
+    .footer svg { width: 42px; height: 42px; }
+    .footer .rule { height: 55px; }
+    .footer-copy h2 { font-size: 17px; margin-bottom: 4px; }
+    .footer-copy p { font-size: 11px; line-height: 1.35; }
+    .hint { bottom: 125px; }
+}
+@media (max-height: 690px) {
+    .footer { min-height: 85px; }
+    .footer-copy h2 { font-size: 16px; margin-bottom: 3px; }
+    .footer-copy p { font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .art-area, #webgl, #planet-labels { transition: none !important; }
+}
