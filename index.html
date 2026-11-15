@@ -25,16 +25,27 @@
         </div>
         <div class="nebula-front">
         </div>
-        <div class="edge-horizon">
-        </div>
-    </div>
+</div>
     <canvas id="webgl"></canvas>
     <div id="planet-labels" aria-label="Подписи планет"></div>
     <div class="flash" id="flash">
     </div>
+    <div id="settings-panel" class="settings-panel" hidden>
+        <div class="settings-title">Настройки отображения</div>
+        <label class="settings-option">
+            <span>Включить анимацию</span>
+            <input type="checkbox" id="animation-toggle" checked>
+            <span class="settings-switch" aria-hidden="true"></span>
+        </label>
+        <label class="settings-option">
+            <span>Включить ники</span>
+            <input type="checkbox" id="labels-toggle" checked>
+            <span class="settings-switch" aria-hidden="true"></span>
+        </label>
+    </div>
     <div class="hud">
         <div class="toprow">
-            <button aria-label="Меню" class="icon" id="menu">
+            <button aria-label="Настройки" aria-controls="settings-panel" aria-expanded="false" class="icon" id="menu">
                 <svg viewbox="0 0 32 32">
                     <path d="M4 8h24M4 16h24M4 24h24">
                     </path>
