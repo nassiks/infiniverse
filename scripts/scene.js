@@ -166,6 +166,7 @@ import { vs, fs } from './shaders.js';
     }
 
     function setMode(inside) {
+        ui('minus').disabled=!inside;
         appState.inside=inside;
         app.classList.toggle('inside',inside);
         ui('explore').disabled=inside;
@@ -219,7 +220,8 @@ import { vs, fs } from './shaders.js';
     }
     const resetCamera=()=>{appState.selected=null;detail.hidden=true;target={...OVERVIEW};};
     function zoom(delta){
-        if(!appState.inside||appState.transition)return;
+        if(appState.transition)return;
+        if(!appState.inside){if(delta>0)enter();return;}
         target=clamp({...target,z:target.z-delta});
     }
     ui('explore').addEventListener('click',enter);
@@ -227,15 +229,35 @@ import { vs, fs } from './shaders.js';
     ui('plus').addEventListener('click',()=>zoom(9));
     ui('minus').addEventListener('click',()=>zoom(-9));
     ui('goBack').addEventListener('click',resetCamera);
+    ui('minus').disabled=true;
     ui('closeDetail').addEventListener('click',()=>{detail.hidden=true;appState.selected=null;});
 
-    function closeSettings(){
-        settings.hidden=true;menuButton.setAttribute('aria-expanded','false');
+    const settingsBackdrop=ui('settings-backdrop');
+    const closeSettingsButton=ui('closeSettings');
+    let menuOpen=false;
+    function closeSettings({restoreFocus=false}={}){
+        if(!menuOpen)return;
+        menuOpen=false;settings.classList.remove('open');
+        settings.setAttribute('aria-hidden','true');
+        settings.inert=true;settingsBackdrop.hidden=true;
+        menuButton.setAttribute('aria-expanded','false');
+        if(restoreFocus)menuButton.focus();
+    }
+    function openSettings(){
+        if(menuOpen)return;
+        menuOpen=true;settings.inert=false;
+        settings.setAttribute('aria-hidden','false');
+        settingsBackdrop.hidden=false;
+        settings.classList.add('open');
+        menuButton.setAttribute('aria-expanded','true');
+        closeSettingsButton.focus();
     }
     menuButton.addEventListener('click',()=>{
-        const open=settings.hidden;
-        settings.hidden=!open;menuButton.setAttribute('aria-expanded',String(open));
+        if(menuOpen)closeSettings({restoreFocus:true});
+        else openSettings();
     });
+    closeSettingsButton.addEventListener('click',()=>closeSettings({restoreFocus:true}));
+    settingsBackdrop.addEventListener('click',()=>closeSettings({restoreFocus:true}));
     ui('animation-toggle').addEventListener('change',event=>{
         animationsEnabled=event.target.checked;
         app.classList.toggle('animations-off',!animationsEnabled);
@@ -247,9 +269,7 @@ import { vs, fs } from './shaders.js';
         persist('infiniverse.labels',labelsEnabled);
         if(!labelsEnabled)labels.forEach(l=>{l.hidden=true;});
     });
-    document.addEventListener('pointerdown',e=>{
-        if(!settings.hidden&&!settings.contains(e.target)&&!menuButton.contains(e.target))closeSettings();
-    });
+
 
     // Accessible dialogs: keyboard focus, escape and focus restoration.
     function openDialog(dialog,focusTarget){
@@ -274,8 +294,15 @@ import { vs, fs } from './shaders.js';
     document.addEventListener('keydown',event=>{
         if(event.key==='Escape'){
             if(activeDialog){event.preventDefault();closeDialog();}
-            else if(!settings.hidden)closeSettings();
+            else if(menuOpen)closeSettings({restoreFocus:true});
             else if(!detail.hidden){detail.hidden=true;appState.selected=null;}
+            return;
+        }
+        if(menuOpen&&event.key==='Tab'){
+            const elements=[...settings.querySelectorAll('button:not([disabled]),input:not([disabled])')];
+            const first=elements[0],last=elements[elements.length-1];
+            if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+            else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
             return;
         }
         if(activeDialog&&event.key==='Tab'){
@@ -288,7 +315,7 @@ import { vs, fs } from './shaders.js';
             }
             return;
         }
-        if(activeDialog||event.target.closest('input,button')||!appState.inside)return;
+        if(menuOpen||activeDialog||event.target.closest('input,button')||!appState.inside)return;
         if(event.key==='+'||event.key==='='){event.preventDefault();zoom(9);}
         if(event.key==='-'){event.preventDefault();zoom(-9);}
         if(event.key==='ArrowLeft'){event.preventDefault();target=clamp({...target,x:target.x-8});}
