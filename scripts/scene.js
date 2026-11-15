@@ -3,7 +3,7 @@ import { vs, fs } from './shaders.js';
 (() => {
     'use strict';
     // DOM references and WebGL setup
-    const app = document.getElementById('app'), art = document.getElementById('galaxy-art'), flash = document.getElementById('flash');
+    const app = document.getElementById('app'), art = document.getElementById('galaxy-art');
     art.addEventListener('error', () => { document.getElementById('error').classList.add('show'); document.getElementById('error').textContent = 'Не удалось загрузить изображение галактики: assets/galaxy/galaxy_core.png. Проверьте, что папка assets находится рядом с index.html.'; });
     const planets = window.PLANETS || [];
     const canvas = document.getElementById('webgl');
@@ -187,72 +187,82 @@ import { vs, fs } from './shaders.js';
         });
     }
 
-    function flashTransition() {
-        flash.classList.remove('go');
-        void flash.offsetWidth;
-        if (animationsEnabled && !reducedMotion.matches) flash.classList.add('go');
+    // Both layers crossfade over the same duration. Keep rendering WebGL
+    // throughout the transition so there is no frame where neither layer exists.
+    const TRANSITION_MS = 1050;
+    let transitionTimer = null;
+
+    function updateGalaxyText() {
+        document.getElementById('modeTitle').textContent = inside
+            ? '100 планет · 3D-пространство'
+            : 'GENESIS-01 · 100 уникальных планет';
+    }
+
+    function finishTransition() {
+        app.classList.remove('entering', 'exiting', 'warping');
+        transitioning = false;
+        transitionTimer = null;
+        updateGalaxyText();
+
+        if (inside && pendingFocus !== null) {
+            const index = pendingFocus;
+            pendingFocus = null;
+            focus(index);
+        }
     }
 
     function enter() {
         if (inside || transitioning) return;
-        transitioning = true;
+
         closeSettings();
         detail.classList.remove('open');
+        transitioning = true;
         const animated = animationsEnabled && !reducedMotion.matches;
-        if (animated) {
-            app.classList.add('warping');
-            artArea.style.transition = 'transform 1.1s cubic-bezier(.12,.7,.12,1), opacity .7s';
-            artArea.style.transform = 'scale(7) rotate(18deg)';
-        }
-        flashTransition();
-        setTimeout(() => {
+
+        // The camera starts in a defined position before WebGL becomes visible.
+        cam = { ...OVERVIEW };
+        goal = { ...OVERVIEW };
+
+        if (!animated) {
             inside = true;
-            transitioning = false;
+            finishTransition();
+            return;
+        }
+
+        app.classList.add('entering');
+        transitionTimer = window.setTimeout(() => {
+            inside = true;
             app.classList.add('inside');
-            cam = { ...OVERVIEW };
-            goal = { ...OVERVIEW };
-            document.getElementById('subtitle').textContent = 'Внутри галактики GENESIS-01';
-            document.getElementById('modeTitle').textContent = '100 планет · 3D-пространство';
-            if (pendingFocus !== null) {
-                const index = pendingFocus;
-                pendingFocus = null;
-                focus(index);
-            }
-        }, animated ? 560 : 0);
-        setTimeout(() => app.classList.remove('warping'), animated ? 1150 : 0);
+            // The final inside state has the same opacity/scale as entering.
+            finishTransition();
+        }, TRANSITION_MS);
     }
 
     function exit() {
         if (!inside || transitioning) return;
-        transitioning = true;
+
         closeSettings();
+        detail.classList.remove('open');
         selection = null;
         pendingFocus = null;
-        detail.classList.remove('open');
         labels.forEach(label => { label.hidden = true; });
+        transitioning = true;
 
         const animated = animationsEnabled && !reducedMotion.matches;
-        if (animated) {
-            app.classList.add('exiting');
-            artArea.style.transition = 'none';
-            artArea.style.transform = 'scale(7) rotate(18deg)';
-            void artArea.offsetWidth;
-            artArea.style.transition = 'transform 1.1s cubic-bezier(.2,.5,.15,1), opacity .7s';
-            artArea.style.transform = 'scale(1)';
-            flashTransition();
+        if (!animated) {
+            inside = false;
+            finishTransition();
+            return;
         }
-        setTimeout(() => {
+
+        // Start with the current 3D view; fade it under the outer galaxy.
+        // The scene continues to render until the crossfade is finished.
+        app.classList.add('exiting');
+        transitionTimer = window.setTimeout(() => {
             inside = false;
             app.classList.remove('inside');
-            document.getElementById('subtitle').textContent = 'Стадия 3 — Появилась галактика';
-            document.getElementById('modeTitle').textContent = 'GENESIS-01 · 100 уникальных планет';
-        }, animated ? 560 : 0);
-        setTimeout(() => {
-            app.classList.remove('exiting');
-            artArea.style.transition = '';
-            artArea.style.transform = 'scale(1)';
-            transitioning = false;
-        }, animated ? 1150 : 0);
+            finishTransition();
+        }, TRANSITION_MS);
     }
 
     function focus(index) {
@@ -281,7 +291,7 @@ import { vs, fs } from './shaders.js';
     // Animated background and 3D frame render
     function draw(t) {
         let ms = t * .001;
-        if (!inside) {
+        if (!inside && !transitioning) {
             gl.clearColor(0, 0, 0, 0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             requestAnimationFrame(draw);
@@ -316,7 +326,8 @@ import { vs, fs } from './shaders.js';
             gl.uniform1f(uniforms.uActive, p.active ? 1 : 0);
             gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
         }
-        updateLabels();
+        // Labels appear only once the transition has completed.
+        if (inside && !transitioning) updateLabels();
         requestAnimationFrame(draw);
     }
     requestAnimationFrame(draw);
