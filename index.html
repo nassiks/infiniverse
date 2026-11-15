@@ -43,11 +43,15 @@
     </div>
   </header>
 
-  <div id="settings-panel" class="settings-panel" hidden>
-    <strong>Настройки отображения</strong>
+  <button type="button" id="settings-backdrop" class="settings-backdrop" aria-label="Закрыть меню" tabindex="-1" hidden></button>
+  <aside id="settings-panel" class="settings-panel" aria-label="Настройки отображения" aria-hidden="true" inert>
+    <div class="settings-heading">
+      <strong>Настройки отображения</strong>
+      <button type="button" id="closeSettings" class="drawer-close" aria-label="Закрыть меню">×</button>
+    </div>
     <label class="settings-option"><span>Включить анимацию</span><input type="checkbox" id="animation-toggle" checked><span class="switch" aria-hidden="true"></span></label>
     <label class="settings-option"><span>Включить ники</span><input type="checkbox" id="labels-toggle" checked><span class="switch" aria-hidden="true"></span></label>
-  </div>
+  </aside>
 
   <section class="hero" aria-labelledby="galaxy-title">
     <div class="hero-heading">
