@@ -67,23 +67,28 @@ import { vs, fs } from './shaders.js';
     let texImage = new Image();
     texImage.onload = () => { gl.bindTexture(gl.TEXTURE_2D, texture); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, texImage); };
     texImage.src = 'assets/planets/planet_texture_atlas.webp';
-    let w = 1, h = 1, dpr = 1, inside = false, transitioning = false, cam = { x: 0, y: 0, z: 210 }, goal = { x: 0, y: 0, z: 210 }, selection = null, drag = false, dragged = false, lastX = 0, lastY = 0, pinchDist = 0, timeout = null;
-    // Screen scaling and scene lifecycle
-    // Perspective matrix is column-major, matching WebGL's uniformMatrix4fv.
+
     const NEAR = 0.3;
     const FAR = 600;
     const FOCAL = 1.55;
+    const OVERVIEW = { x: 0, y: 0, z: 210 };
+    let w = 1, h = 1, inside = false, transitioning = false;
+    let cam = { ...OVERVIEW }, goal = { ...OVERVIEW };
+    let selection = null, pendingFocus = null;
     let projectionMatrix = new Float32Array(16);
+    const detail = document.getElementById('detail');
+    const artArea = document.getElementById('art-area');
+    const labelLayer = document.getElementById('planet-labels');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     function resize() {
-        dpr = Math.min(window.devicePixelRatio || 1, 2);
-        w = canvas.clientWidth;
-        h = canvas.clientHeight;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = Math.max(1, canvas.clientWidth);
+        h = Math.max(1, canvas.clientHeight);
         canvas.width = Math.round(w * dpr);
         canvas.height = Math.round(h * dpr);
         gl.viewport(0, 0, canvas.width, canvas.height);
-
-        const aspect = w / Math.max(1, h);
+        const aspect = w / h;
         projectionMatrix = new Float32Array([
             FOCAL / aspect, 0, 0, 0,
             0, FOCAL, 0, 0,
@@ -93,19 +98,108 @@ import { vs, fs } from './shaders.js';
     }
     window.addEventListener('resize', resize);
     resize();
-    function enter() { if (inside || transitioning)
-        return; transitioning = true; document.getElementById('detail').classList.remove('open'); art.style.transition = 'transform 1.8s cubic-bezier(.16,.74,.18,1),opacity .95s'; art.style.transform = 'scale(7) rotate(18deg)'; flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go'); window.setTimeout(() => { inside = true; app.classList.add('inside'); document.getElementById('subtitle').textContent = 'Внутри галактики GENESIS-01'; document.getElementById('modeTitle').textContent = '100 планет · расширенное 3D-пространство'; goal = { x: 0, y: 0, z: 210 }; cam = { x: 0, y: 0, z: 210 }; transitioning = false; }, 970); }
-    function exit() { if (!inside || transitioning)
-        return; inside = false; selection = null; app.classList.remove('inside'); document.getElementById('detail').classList.remove('open'); document.getElementById('subtitle').textContent = 'Стадия 3 — Появилась галактика'; document.getElementById('modeTitle').textContent = 'GENESIS-01 · 100 уникальных планет'; art.style.transition = 'none'; art.style.transform = 'scale(1)'; void art.offsetWidth; art.style.transition = 'transform 1.8s,opacity .9s'; }
-    // Search-to-camera navigation and selected planet details
-    function focus(i) { if (!Number.isInteger(i) || !planets[i])
-        return; if (!inside) {
-        enter();
-        window.setTimeout(() => focus(i), 1350);
-        return;
-    } const p = planets[i]; selection = i; goal = { x: p.world.x, y: p.world.y, z: p.world.z + 10 }; document.getElementById('planetId').textContent = 'ПЛАНЕТА #' + String(p.id).padStart(3, '0') + ' · GENESIS-01'; document.getElementById('planetName').textContent = p.name; document.getElementById('planetUser').textContent = p.username; document.getElementById('planetDescription').textContent = p.description; document.getElementById('planetStatus').textContent = p.active ? '● Подписка активна' : '○ Подписка неактивна — без цвета'; document.getElementById('statusBtn').textContent = p.active ? 'Сделать бесцветной' : 'Вернуть цвет'; document.getElementById('detail').classList.add('open'); closeSearch(); }
-    function projection(p) { let dx = p.world.x - cam.x, dy = p.world.y - cam.y, dz = cam.z - p.world.z; if (dz <= .2)
-        return null; return { x: w / 2 + (dx / (w / h) / dz * 1.55) * w / 2, y: h / 2 - (dy / dz * 1.55) * h / 2, size: p.radius / dz * h * .77 }; }
+
+    function projection(p) {
+        const dz = cam.z - p.world.z;
+        if (dz <= NEAR || dz >= FAR) return null;
+        const x = w / 2 + (p.world.x - cam.x) * FOCAL / dz * h / 2;
+        const y = h / 2 - (p.world.y - cam.y) * FOCAL / dz * h / 2;
+        const size = p.radius * FOCAL / dz * h / 2;
+        return { x, y, size };
+    }
+
+    const labels = planets.map((planet, index) => {
+        const button = document.createElement('button');
+        button.className = 'planet-label';
+        button.type = 'button';
+        button.textContent = planet.username;
+        button.hidden = true;
+        button.addEventListener('click', () => focus(index));
+        labelLayer.appendChild(button);
+        return button;
+    });
+
+    function updateLabels() {
+        labels.forEach((label, index) => {
+            const point = projection(planets[index]);
+            const visible = inside && point && point.size >= 3 &&
+                point.x > -20 && point.x < w + 20 &&
+                point.y > -20 && point.y < h + 20;
+            label.hidden = !visible;
+            if (!visible) return;
+            label.style.transform = 'translate3d(' + point.x + 'px,' +
+                (point.y - point.size - 10) + 'px,0) translate(-50%,-100%)';
+            label.classList.toggle('selected', index === selection);
+        });
+    }
+
+    function enter() {
+        if (inside || transitioning) return;
+        transitioning = true;
+        app.classList.add('warping');
+        detail.classList.remove('open');
+        artArea.style.transition = 'transform 1.65s cubic-bezier(.12,.68,.12,1), opacity 1.1s';
+        artArea.style.transform = 'scale(8) rotate(22deg)';
+        flash.classList.remove('go');
+        void flash.offsetWidth;
+        flash.classList.add('go');
+        const duration = reducedMotion.matches ? 0 : 970;
+        setTimeout(() => {
+            inside = true;
+            transitioning = false;
+            app.classList.add('inside');
+            cam = { ...OVERVIEW };
+            goal = { ...OVERVIEW };
+            document.getElementById('subtitle').textContent = 'Внутри галактики GENESIS-01';
+            document.getElementById('modeTitle').textContent = '100 планет · 3D-пространство';
+            if (pendingFocus !== null) {
+                const index = pendingFocus;
+                pendingFocus = null;
+                focus(index);
+            }
+        }, duration);
+        setTimeout(() => app.classList.remove('warping'), duration + 450);
+    }
+
+    function exit() {
+        if (!inside || transitioning) return;
+        inside = false;
+        selection = null;
+        pendingFocus = null;
+        app.classList.remove('inside', 'warping');
+        detail.classList.remove('open');
+        labels.forEach(label => label.hidden = true);
+        document.getElementById('subtitle').textContent = 'Стадия 3 — Появилась галактика';
+        document.getElementById('modeTitle').textContent = 'GENESIS-01 · 100 уникальных планет';
+        artArea.style.transition = 'none';
+        artArea.style.transform = 'scale(1)';
+        void artArea.offsetWidth;
+        artArea.style.transition = '';
+    }
+
+    function focus(index) {
+        if (!Number.isInteger(index) || !planets[index]) return;
+        closeSearch();
+        if (!inside || transitioning) {
+            pendingFocus = index;
+            if (!inside && !transitioning) enter();
+            return;
+        }
+        const p = planets[index];
+        selection = index;
+        const distance = Math.max(38, p.radius * (w < 650 ? 9 : 7));
+        goal = { x: p.world.x, y: p.world.y, z: p.world.z + distance };
+        document.getElementById('planetId').textContent =
+            'ПЛАНЕТА #' + String(p.id).padStart(3, '0') + ' · GENESIS-01';
+        document.getElementById('planetName').textContent = p.name;
+        document.getElementById('planetUser').textContent = p.username;
+        document.getElementById('planetDescription').textContent = p.description;
+        document.getElementById('planetStatus').textContent =
+            p.active ? '● Подписка активна' : '○ Подписка неактивна — без цвета';
+        document.getElementById('statusBtn').textContent =
+            p.active ? 'Сделать бесцветной' : 'Вернуть цвет';
+        detail.classList.add('open');
+    }
     // Animated background and 3D frame render
     function draw(t) {
         let ms = t * .001;
@@ -142,45 +236,107 @@ import { vs, fs } from './shaders.js';
             gl.uniform1f(uniforms.uActive, p.active ? 1 : 0);
             gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
         }
+        updateLabels();
         requestAnimationFrame(draw);
     }
     requestAnimationFrame(draw);
-    // Input handlers: zoom, drag and click
-    function zoom(dir) { if (!inside) {
-        if (dir > 0)
-            enter();
-        return;
-    } let delta = dir > 0 ? -8 : 8; goal.z = Math.max(-60, Math.min(260, goal.z + delta)); if (dir < 0 && goal.z > 250) {
-        exit();
-    } }
-    ;
-    document.getElementById('plus').onclick = () => zoom(1);
-    document.getElementById('minus').onclick = () => zoom(-1);
-    document.getElementById('back').onclick = exit;
-    document.getElementById('menu').onclick = () => { if (inside)
-        exit();
-    else
-        enter(); };
-    document.getElementById('goBack').onclick = () => { document.getElementById('detail').classList.remove('open'); selection = null; goal = { x: 0, y: 0, z: 210 }; };
-    canvas.addEventListener('wheel', e => { e.preventDefault(); zoom(e.deltaY < 0 ? 1 : -1); }, { passive: false });
-    app.addEventListener('wheel', e => { if (e.target.closest('button, input, .search, .detail'))
-        return; e.preventDefault(); zoom(e.deltaY < 0 ? 1 : -1); }, { passive: false });
-    canvas.addEventListener('pointerdown', e => { drag = true; dragged = false; lastX = e.clientX; lastY = e.clientY; canvas.setPointerCapture(e.pointerId); });
-    canvas.addEventListener('pointermove', e => { if (!drag || !inside)
-        return; let dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY; if (Math.abs(dx) + Math.abs(dy) > 3)
-        dragged = true; let factor = .023 * Math.max(20, Math.abs(cam.z)) / 42; goal.x -= dx * factor; goal.y += dy * factor; });
-    canvas.addEventListener('pointerup', e => { drag = false; if (dragged)
-        return; let best = -1, dist = 35; planets.forEach((p, i) => { let a = projection(p); if (!a)
-        return; let d = Math.hypot(a.x - e.clientX, a.y - e.clientY); if (d < Math.max(16, a.size + 7) && d < dist) {
-        best = i;
-        dist = d;
-    } }); if (best >= 0)
-        focus(best); });
-    let startTouch = 0;
-    app.addEventListener('touchstart', e => { if (e.touches.length === 2)
-        startTouch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); }, { passive: true });
-    app.addEventListener('touchend', e => { if (startTouch && e.touches.length === 0)
-        startTouch = 0; }, { passive: true });
+
+    // Pointer Events unify mouse dragging and two-finger pinch zoom.
+    function zoom(delta) {
+        if (!inside) {
+            if (delta > 0) enter();
+            return;
+        }
+        goal.z = Math.min(255, Math.max(-60, goal.z - delta));
+        if (delta < 0 && goal.z >= 250) exit();
+    }
+
+    document.getElementById('plus').onclick = () => zoom(8);
+    document.getElementById('minus').onclick = () => zoom(-8);
+    document.getElementById('menu').onclick = () => inside ? exit() : enter();
+    document.getElementById('goBack').onclick = () => {
+        selection = null;
+        detail.classList.remove('open');
+        goal = { ...OVERVIEW };
+    };
+
+    app.addEventListener('wheel', event => {
+        if (event.target.closest('button, input, .search, .detail')) return;
+        event.preventDefault();
+        zoom(event.deltaY < 0 ? 8 : -8);
+    }, { passive: false });
+
+    const pointers = new Map();
+    let lastPoint = null;
+    let lastPinch = null;
+    let moved = false;
+
+    function distanceBetweenFingers() {
+        const [a, b] = [...pointers.values()];
+        return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    app.addEventListener('pointerdown', event => {
+        if (event.target.closest('button, input, .search, .detail, .hud, .footer, .planet-label')) return;
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (event.pointerType !== 'mouse') app.setPointerCapture(event.pointerId);
+        if (pointers.size === 1) {
+            moved = false;
+            lastPoint = { x: event.clientX, y: event.clientY };
+        } else if (pointers.size === 2) {
+            moved = true;
+            lastPinch = distanceBetweenFingers();
+            lastPoint = null;
+        }
+    });
+
+    app.addEventListener('pointermove', event => {
+        if (!pointers.has(event.pointerId)) return;
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pointers.size === 2) {
+            const now = distanceBetweenFingers();
+            if (lastPinch !== null) zoom((now - lastPinch) * 0.16);
+            lastPinch = now;
+            return;
+        }
+        if (!inside || !lastPoint) return;
+        const dx = event.clientX - lastPoint.x;
+        const dy = event.clientY - lastPoint.y;
+        if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+        const speed = 0.023 * Math.max(20, Math.abs(cam.z)) / 42;
+        goal.x -= dx * speed;
+        goal.y += dy * speed;
+        lastPoint = { x: event.clientX, y: event.clientY };
+    });
+
+    function release(event) {
+        if (!pointers.has(event.pointerId)) return;
+        const click = inside && !moved && pointers.size === 1 &&
+            event.type === 'pointerup';
+        pointers.delete(event.pointerId);
+        lastPinch = null;
+        lastPoint = pointers.size === 1 ? [...pointers.values()][0] : null;
+        if (!click) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const px = event.clientX - rect.left;
+        const py = event.clientY - rect.top;
+        let best = -1;
+        let nearest = 36;
+
+        planets.forEach((p, i) => {
+            const point = projection(p);
+            if (!point) return;
+            const d = Math.hypot(point.x - px, point.y - py);
+            if (d < Math.max(16, point.size + 7) && d < nearest) {
+                nearest = d;
+                best = i;
+            }
+        });
+        if (best !== -1) focus(best);
+    }
+    app.addEventListener('pointerup', release);
+    app.addEventListener('pointercancel', release);
     // Search overlay and planet status controls
     const search = document.getElementById('search'), query = document.getElementById('query'), results = document.getElementById('results');
     function show(q) { results.innerHTML = ''; const s = q.toLowerCase().replace(/^@/, '').trim(); for (const p of planets.filter(p => p.username.toLowerCase().includes(s) || (s && String(p.id) === s)).slice(0, s ? 20 : 8)) {
@@ -192,7 +348,7 @@ import { vs, fs } from './shaders.js';
         meta.textContent = '#' + String(p.id).padStart(3, '0');
         meta.style.color = '#bd98e0';
         b.append(nm, meta);
-        b.onclick = () => focus(p.id - 1);
+        b.onclick = () => focus(planets.indexOf(p));
         results.append(b);
     } if (!results.children.length)
         results.textContent = 'Совпадений нет'; }
@@ -205,7 +361,7 @@ import { vs, fs } from './shaders.js';
         closeSearch(); if (e.key === 'Enter') {
         const p = planets.find(p => p.username.toLowerCase().replace(/^@/, '') === query.value.trim().toLowerCase().replace(/^@/, ''));
         if (p)
-            focus(p.id - 1);
+            focus(planets.indexOf(p));
     } };
     document.getElementById('closeDetail').onclick = () => document.getElementById('detail').classList.remove('open');
     document.getElementById('statusBtn').onclick = () => { if (selection == null)
