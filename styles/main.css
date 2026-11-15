@@ -38,7 +38,7 @@ button {
   background:radial-gradient(ellipse at 50% 44%,#130923 0%,#070316 55%,#020009 100%);
 }
 
-#space,#webgl {
+#star-background,#webgl {
   position:absolute;
   inset:0;
   width:100%;
@@ -46,9 +46,17 @@ button {
   display:block;
 }
 
-#space {
+#star-background {
   z-index:1;
   pointer-events:none;
+  background: url('../assets/background/stars_and_distant_galaxies.webp') center / cover no-repeat;
+  animation: star-drift 50s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+
+@keyframes star-drift {
+  from { transform: scale(1); }
+  to { transform: scale(1.045); }
 }
 
 #webgl {
@@ -63,7 +71,7 @@ button {
   pointer-events:auto;
 }
 
-#app.inside #space {
+#app.inside #star-background {
   opacity:.65;
 }
 
@@ -719,3 +727,7 @@ button {
 
 }
 
+
+@media (prefers-reduced-motion: reduce) {
+  #star-background { animation: none; }
+}

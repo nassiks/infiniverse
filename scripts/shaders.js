@@ -1,18 +1,8 @@
-
 /**
- * INFINIVERSE — WebGL Shaders
- *
- * vs — Vertex Shader
- * Отвечает за положение, размер, вращение и глубину планет.
- *
- * fs — Fragment Shader
- * Отвечает за текстуру, освещение, атмосферу и цвет планет.
+ * WebGL 1 GLSL shaders.
+ * A true perspective clip-space transform enables correct depth testing,
+ * near-plane clipping and perspective-correct texture interpolation.
  */
-
-// ============================================================
-// VERTEX SHADER
-// ============================================================
-
 export const vs = `
     attribute vec3 aPosition;
     attribute vec3 aNormal;
@@ -20,7 +10,7 @@ export const vs = `
 
     uniform vec3 uLocation;
     uniform vec3 uCamera;
-    uniform vec2 uScreen;
+    uniform mat4 uProjection;
     uniform float uSize;
     uniform float uSpin;
 
@@ -29,7 +19,6 @@ export const vs = `
     varying vec3 vView;
 
     void main() {
-        // Вращение планеты вокруг вертикальной оси
         float c = cos(uSpin);
         float s = sin(uSpin);
 
@@ -39,57 +28,20 @@ export const vs = `
             aPosition.x * s + aPosition.z * c
         );
 
-        // Положение вершины в мировом пространстве
         vec3 worldPosition = uLocation + local * uSize;
-
-        // Положение относительно камеры
         vec3 viewPosition = worldPosition - uCamera;
 
-        float depth = -viewPosition.z;
+        gl_Position = uProjection * vec4(viewPosition, 1.0);
 
-        // Перспективная проекция
-        float focalLength = 1.55;
-
-        vec2 screen = vec2(
-            viewPosition.x / uScreen.x,
-            viewPosition.y
-        ) * focalLength / max(depth, 0.001);
-
-        // Корректная глубина для WebGL DEPTH_TEST
-        float nearPlane = 0.3;
-        float farPlane = 245.0;
-
-        float normalizedDepth = clamp(
-            (depth - nearPlane) / (farPlane - nearPlane),
-            0.0,
-            1.0
-        );
-
-        float clipDepth = normalizedDepth * 2.0 - 1.0;
-
-        gl_Position = vec4(
-            screen,
-            clipDepth,
-            1.0
-        );
-
-        // Поворот нормали для правильного освещения
         vNormal = vec3(
             aNormal.x * c - aNormal.z * s,
             aNormal.y,
             aNormal.x * s + aNormal.z * c
         );
-
         vUV = aUv;
-
-        // Направление взгляда (упрощённая модель)
         vView = vec3(0.0, 0.0, 1.0);
     }
 `;
-
-// ============================================================
-// FRAGMENT SHADER
-// ============================================================
 
 export const fs = `
     precision mediump float;
@@ -103,57 +55,30 @@ export const fs = `
     uniform float uActive;
 
     void main() {
-        // Координаты отдельной текстуры в атласе 10×10
-        vec2 uv = vec2(
-            (vUV.x + uTile.x) / 10.0,
-            (vUV.y + uTile.y) / 10.0
-        );
-
-        // Получаем цвет поверхности планеты
+        // Texture atlas is a 10 x 10 grid.
+        vec2 uv = (vUV + uTile) / 10.0;
         vec3 color = texture2D(uAtlas, uv).rgb;
 
-        // Переводим цвет в оттенки серого
-        float grayscale = dot(
-            color,
-            vec3(0.2126, 0.7152, 0.0722)
-        );
+        float gray = dot(color, vec3(0.2126, 0.7152, 0.0722));
+        color = mix(vec3(gray), color, uActive);
 
-        // Неактивная подписка = бесцветная планета
-        color = mix(
-            vec3(grayscale),
-            color,
-            uActive
-        );
+        vec3 lightDirection = normalize(vec3(-0.55, 0.65, 1.2));
+        float light = max(dot(normalize(vNormal), lightDirection), 0.0);
 
-        // Направление основного освещения
-        vec3 lightDirection = normalize(
-            vec3(-0.55, 0.65, 1.2)
-        );
-
-        // Освещённость поверхности
-        float light = max(
-            dot(normalize(vNormal), lightDirection),
-            0.0
-        );
-
-        // Лёгкое фиолетовое свечение по краям
         float rim = pow(
-            1.0 - max(
-                dot(
-                    normalize(vNormal),
-                    normalize(vView)
-                ),
-                0.0
-            ),
+            1.0 - max(dot(normalize(vNormal), normalize(vView)), 0.0),
             3.0
         );
 
-        // Итоговый цвет
+        // Inactive planets also have a neutral (not purple) rim.
+        vec3 rimColor = mix(
+            vec3(0.25),
+            vec3(0.25, 0.10, 0.49),
+            uActive
+        );
+
         color = color * (0.19 + 0.82 * light);
-
-        color += vec3(0.25, 0.10, 0.49) * rim * 0.42;
-
-        // Планета полностью непрозрачная
+        color += rimColor * rim * 0.42;
         gl_FragColor = vec4(color, 1.0);
     }
 `;
