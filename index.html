@@ -33,8 +33,9 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <a class="brand" href="./" aria-label="INFINIVERSE — главный экран">
-        <img src="assets/branding/infiniverse_logo_variant_3.svg" alt="INFINIVERSE"
-          width="1600" height="520" decoding="async">
+        <img class="brand-mark" src="assets/branding/infiniverse_infinity_mark.svg"
+          alt="" width="108" height="56" decoding="async">
+        <span class="brand-wordmark">INFINIVERSE</span>
       </a>
       <button class="icon-button" id="searchBtn" type="button" aria-label="Найти планету">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
@@ -54,8 +55,8 @@
       <h1 id="galaxy-title">GENESIS-01</h1>
     </div>
     <div class="counts" aria-label="Статистика галактики">
-      <span class="pill"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="15" r="6"/><ellipse cx="14" cy="15" rx="13" ry="5" transform="rotate(-25 14 15)"/></svg><strong id="planetCount">100</strong> планет</span>
-      <span class="pill"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 16C7 5 2 18 9 24c11 9 23-9 11-17-8-6-22 2-17 16"/></svg><strong>1</strong> галактика</span>
+      <span class="pill"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="17" cy="18" r="8"/><ellipse cx="17" cy="18" rx="16" ry="6" transform="rotate(-26 17 18)"/><path d="M10 15a8 8 0 0 1 13-2" opacity=".7"/></svg><strong id="planetCount">100</strong> планет</span>
+      <span class="pill"><svg viewBox="0 0 36 36" aria-hidden="true"><ellipse cx="18" cy="18" rx="16" ry="9" transform="rotate(-24 18 18)"/><ellipse cx="18" cy="18" rx="10" ry="5" transform="rotate(-24 18 18)"/><path d="M12 22c6 1 12-5 12-9M14 17c4-4 9-4 10-2"/></svg><strong>1</strong> галактика</span>
     </div>
   </section>
 
@@ -71,8 +72,12 @@
 
   <section class="footer" aria-labelledby="create-title">
     <svg class="footer-planet" viewBox="0 0 88 70" aria-hidden="true">
-      <circle cx="37" cy="35" r="20"/>
-      <ellipse cx="37" cy="35" rx="38" ry="13" transform="rotate(-25 37 35)"/>
+      <defs><linearGradient id="planet-illustration" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#f2d6ff"/><stop offset=".6" stop-color="#b06dff"/><stop offset="1" stop-color="#7644d0"/>
+      </linearGradient></defs>
+      <circle cx="39" cy="35" r="21" fill="url(#planet-illustration)" fill-opacity=".10"/>
+      <circle cx="39" cy="35" r="21" />
+      <ellipse cx="39" cy="35" rx="38" ry="13" transform="rotate(-25 39 35)"/>
     </svg>
     <div class="footer-rule" aria-hidden="true"></div>
     <div class="footer-copy">
