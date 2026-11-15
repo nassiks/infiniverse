@@ -1036,3 +1036,32 @@ button {
   .chip { top: 151px; }
   .footer { padding-top: 8px; padding-bottom: 8px; min-height: 0; }
 }
+
+/* Vector wordmark: original infinity SVG, responsive in the header. */
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  text-shadow: none;
+  letter-spacing: normal;
+  line-height: 0;
+}
+.brand::after { content: none !important; display: none !important; }
+.brand img {
+  display: block;
+  width: clamp(190px, 32vw, 295px);
+  height: auto;
+  max-height: 88px;
+  object-fit: contain;
+}
+@media (max-width: 600px) {
+  .brand img {
+    width: clamp(160px, 49vw, 220px);
+    max-height: 72px;
+  }
+}
+@media (max-width: 360px) {
+  .brand img { width: 155px; }
+}
