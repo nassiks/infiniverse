@@ -199,3 +199,211 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #e7
   .galaxy-frame { width:min(60vw,46vh); top:53%; }
   .scene-hint { display:none !important; }
 }
+
+/* ============================================================
+   Galaxy welcome screen — UI only, existing artwork unchanged.
+   The background image, galaxy artwork, nebula and WebGL assets
+   remain exactly as they were in the preceding release.
+   ============================================================ */
+
+/* Thin framed navigation bar, but no individual button outlines. */
+.site-header {
+  top: clamp(8px, 1.4vh, 16px);
+  left: clamp(12px, 1.65vw, 27px);
+  right: clamp(12px, 1.65vw, 27px);
+  height: clamp(70px, 8.5vh, 84px);
+  border: 1px solid rgba(184, 147, 228, .43);
+  border-radius: 18px;
+  background: linear-gradient(105deg,rgba(13,8,28,.87),rgba(11,7,24,.82));
+  box-shadow: 0 10px 32px rgba(0,0,0,.28);
+}
+.icon-button,
+.icon-button:hover,
+.icon-button:active {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+.icon-button {
+  border-radius: 0;
+  width: 46px;
+  height: 46px;
+}
+.icon-button svg { width: 27px; height: 27px; stroke: #f4eaff; stroke-width: 2; }
+.icon-button:focus-visible {
+  border-radius: 8px;
+  outline: 2px solid #e8ccff;
+  outline-offset: 3px;
+}
+.header-inner { padding-inline:clamp(18px,2.5vw,34px); }
+
+/* Display title and secondary statistics, with no slogan or floating CTA. */
+.hero {
+  top: clamp(128px, 16.6vh, 180px);
+  gap: 13px;
+  width: min(95%, 780px);
+}
+.hero-heading { gap: 4px; }
+.hero h1 {
+  margin: 8px 0 2px;
+  font-size: clamp(36px, 5vw, 65px);
+  font-weight: 560;
+  letter-spacing: .058em;
+  line-height: 1.05;
+  text-shadow: 0 2px 13px rgba(161,91,245,.24);
+}
+.eyebrow {
+  color: #cfa9fa;
+  letter-spacing: .30em;
+  font-size: clamp(11px,1.17vw,15px);
+  font-weight: 500;
+}
+.counts { gap: clamp(13px,2vw,26px); }
+.pill {
+  padding: 11px 22px;
+  gap: 7px;
+  font-size: clamp(14px,1.48vw,18px);
+  background: rgba(30,19,52,.68);
+  border: 1px solid rgba(182,139,224,.47);
+  border-radius: 17px;
+}
+.pill svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+  margin-right: 3px;
+  fill: none;
+  stroke: #cc9dff;
+  stroke-width: 1.7;
+  flex: none;
+}
+.pill strong { font-size: inherit; font-weight: 500; }
+
+/* Invisible but accessible entry hotspot covering the existing galaxy.
+   The galaxy art is not replaced or visually altered. */
+.galaxy-entry {
+  position:absolute;
+  z-index:4;
+  left:50%;
+  top:50%;
+  width:min(71vw,67vh);
+  aspect-ratio:1;
+  transform: translate(-50%,-50%);
+  padding:0;
+  border:0;
+  background:transparent;
+  border-radius:50%;
+  cursor:zoom-in;
+}
+#app.inside .galaxy-entry,
+#app.entering .galaxy-entry,
+#app.exiting .galaxy-entry { display:none; }
+.galaxy-entry:focus-visible { outline:2px solid #ddc1ff; outline-offset:6px; }
+
+/* Compact bottom card uses the original approved heading and description.
+   Clicking anywhere in the card opens the existing instructions dialog. */
+.footer {
+  width:min(800px,calc(100% - 34px));
+  min-height:0;
+  padding:15px 24px;
+  gap:20px;
+  border-radius:24px;
+  border:1px solid rgba(200,151,250,.85);
+  background:linear-gradient(125deg,rgba(45,23,72,.91),rgba(21,12,39,.94));
+  box-shadow:0 12px 35px rgba(0,0,0,.42),0 0 14px rgba(172,100,255,.18);
+}
+.footer-planet {
+  width:72px;
+  height:58px;
+  flex:none;
+  stroke:#ce9dff;
+  stroke-width:2.2;
+  fill:none;
+  filter:drop-shadow(0 0 5px rgba(191,125,252,.38));
+}
+.footer-rule {
+  width:1px;
+  height:54px;
+  background:rgba(197,155,232,.63);
+  flex:none;
+}
+.footer-copy { flex:1 1 auto; min-width:0; }
+.footer-copy h2 {
+  margin:0 0 4px;
+  font-size:clamp(18px,2vw,26px);
+  line-height:1.15;
+  font-weight:650;
+}
+.footer-copy p {
+  margin:0;
+  font-size:clamp(13px,1.15vw,16px);
+  line-height:1.34;
+  color:#f0e4fa;
+}
+.footer-open {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  background:transparent;
+  border:0;
+  border-radius:inherit;
+  cursor:pointer;
+}
+.footer-open:focus-visible {
+  outline:3px solid #fff;
+  outline-offset:3px;
+}
+.footer:hover { border-color:rgba(232,199,255,.96); }
+#app.inside .footer,
+#app.entering .footer,
+#app.exiting .footer { opacity:0; pointer-events:none; }
+
+@media (max-width:650px) {
+  .site-header {
+    left:clamp(12px,3vw,24px);
+    right:clamp(12px,3vw,24px);
+    top:clamp(12px,3vh,28px);
+    height:72px;
+    border-radius:24px;
+  }
+  .header-inner { padding-inline:18px; }
+  .icon-button { width:44px; height:44px; }
+  .hero { top:clamp(133px,17vh,190px); gap:17px; }
+  .hero h1 { font-size:clamp(30px,7.7vw,47px); letter-spacing:.025em; }
+  .eyebrow { font-size:clamp(11px,2.8vw,15px); letter-spacing:.21em; }
+  .counts { flex-wrap:nowrap; gap:10px; }
+  .pill {
+    font-size:clamp(12px,3.1vw,16px);
+    padding:8px clamp(10px,2.7vw,17px);
+    gap:5px;
+    border-radius:16px;
+    white-space:nowrap;
+  }
+  .pill svg { width:22px; height:22px; margin-right:0; }
+  .galaxy-entry { width:min(93vw,56vh); top:54%; }
+  .footer {
+    left:50%;
+    width:calc(100% - 26px);
+    padding:13px 13px;
+    gap:12px;
+    border-radius:20px;
+    bottom:max(16px,env(safe-area-inset-bottom));
+  }
+  .footer-planet { width:57px; height:51px; }
+  .footer-rule { height:50px; }
+  .footer-copy h2 { font-size:clamp(17px,4.1vw,22px); margin-bottom:5px; }
+  .footer-copy p { font-size:clamp(12px,3.15vw,14px); line-height:1.28; }
+}
+@media (max-width:370px) {
+  .footer-planet { width:42px; height:43px; }
+  .footer-rule { height:44px; }
+  .footer { padding:10px; gap:8px; }
+  .pill { padding:7px 8px; }
+  .pill svg { width:18px; height:18px; }
+}
+@media (max-height:650px) {
+  .hero { top:calc(var(--header-height) + 34px); gap:8px; }
+  .hero h1 { font-size:clamp(26px,4.7vw,44px); }
+  .footer { padding-block:10px; }
+}
