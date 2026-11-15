@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 56" role="img" aria-label="Знак бесконечности INFINIVERSE">
+  <defs>
+    <linearGradient id="infinity-purple" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6637d7"/>
+      <stop offset=".29" stop-color="#bc77ff"/>
+      <stop offset=".52" stop-color="#dfabff"/>
+      <stop offset=".75" stop-color="#9e52f3"/>
+      <stop offset="1" stop-color="#6335cf"/>
+    </linearGradient>
+  </defs>
+  <path d="M54 28C43 12 32 9 23 9C11 9 5 19 5 28C5 38 12 47 23 47C35 47 45 34 54 28C64 21 74 9 86 9C98 9 103 19 103 28C103 38 96 47 86 47C74 47 64 35 54 28Z"
+    fill="none" stroke="url(#infinity-purple)" stroke-width="5.5"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M50 24L58 32" stroke="#f4d9ff" stroke-width="1.8" opacity=".65" stroke-linecap="round"/>
+</svg>

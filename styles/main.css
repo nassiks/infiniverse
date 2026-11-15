@@ -200,210 +200,258 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #e7
   .scene-hint { display:none !important; }
 }
 
-/* ============================================================
-   Galaxy welcome screen — UI only, existing artwork unchanged.
-   The background image, galaxy artwork, nebula and WebGL assets
-   remain exactly as they were in the preceding release.
-   ============================================================ */
 
-/* Thin framed navigation bar, but no individual button outlines. */
+/* Galaxy welcome screen: design-match UI, preserving original artwork CSS above. */
+:root {
+  --header-frame: linear-gradient(122deg,#55416c 3%,#a87add 36%,#533862 70%,#8e62ae);
+  --card-frame: linear-gradient(125deg,#f0bdff 0%,#9862ca 24%,#654184 55%,#d297ff 79%,#9955d6 100%);
+}
+
+/* Outline belongs to the outer header, never the icon buttons. */
 .site-header {
-  top: clamp(8px, 1.4vh, 16px);
-  left: clamp(12px, 1.65vw, 27px);
-  right: clamp(12px, 1.65vw, 27px);
-  height: clamp(70px, 8.5vh, 84px);
-  border: 1px solid rgba(184, 147, 228, .43);
-  border-radius: 18px;
-  background: linear-gradient(105deg,rgba(13,8,28,.87),rgba(11,7,24,.82));
-  box-shadow: 0 10px 32px rgba(0,0,0,.28);
+  top:clamp(8px,1.3vh,14px);
+  left:clamp(14px,1.6vw,26px);
+  right:clamp(14px,1.6vw,26px);
+  height:clamp(72px,8.7vh,86px);
+  border:1px solid transparent;
+  border-radius:18px;
+  background:
+    linear-gradient(115deg,rgba(17,12,30,.84),rgba(11,8,24,.75)) padding-box,
+    var(--header-frame) border-box;
+  box-shadow:0 8px 28px rgba(0,0,0,.32);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
 }
-.icon-button,
-.icon-button:hover,
-.icon-button:active {
-  border: none;
-  box-shadow: none;
-  background: transparent;
+.header-inner { padding-inline:clamp(16px,2.55vw,35px); }
+.icon-button,.icon-button:hover,.icon-button:active {
+  width:48px;
+  height:48px;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
 }
-.icon-button {
-  border-radius: 0;
-  width: 46px;
-  height: 46px;
-}
-.icon-button svg { width: 27px; height: 27px; stroke: #f4eaff; stroke-width: 2; }
-.icon-button:focus-visible {
-  border-radius: 8px;
-  outline: 2px solid #e8ccff;
-  outline-offset: 3px;
-}
-.header-inner { padding-inline:clamp(18px,2.5vw,34px); }
+.icon-button svg { width:26px; height:26px; stroke:#f8edff; stroke-width:2; }
+.icon-button:focus-visible { outline:2px solid #e5baff; outline-offset:2px; border-radius:8px; }
 
-/* Display title and secondary statistics, with no slogan or floating CTA. */
+/* Reference wordmark is an infinity symbol at left and lettering at right. */
+.brand {
+  width:auto;
+  max-width:100%;
+  display:flex;
+  align-items:center;
+  justify-self:center;
+  justify-content:center;
+  gap:clamp(9px,1vw,15px);
+  text-decoration:none;
+  white-space:nowrap;
+  min-width:0;
+}
+.brand-mark {
+  display:block;
+  width:clamp(48px,5vw,76px);
+  height:auto;
+  max-height:43px;
+  object-fit:contain;
+  flex:0 0 auto;
+}
+.brand-wordmark {
+  font-family:"Segoe UI",Arial,sans-serif;
+  font-weight:400;
+  font-size:clamp(16px,1.85vw,25px);
+  letter-spacing:.23em;
+  line-height:1;
+  color:#f6edff;
+  text-shadow:0 0 8px rgba(184,147,255,.08);
+}
+
+/* Title is closer to the frame than before; typography is restrained. */
 .hero {
-  top: clamp(128px, 16.6vh, 180px);
-  gap: 13px;
-  width: min(95%, 780px);
+  top:clamp(105px,11.8vh,132px);
+  gap:clamp(12px,1.7vh,18px);
+  width:min(96%,810px);
 }
-.hero-heading { gap: 4px; }
-.hero h1 {
-  margin: 8px 0 2px;
-  font-size: clamp(36px, 5vw, 65px);
-  font-weight: 560;
-  letter-spacing: .058em;
-  line-height: 1.05;
-  text-shadow: 0 2px 13px rgba(161,91,245,.24);
-}
+.hero-heading { display:grid; gap:3px; }
 .eyebrow {
-  color: #cfa9fa;
-  letter-spacing: .30em;
-  font-size: clamp(11px,1.17vw,15px);
-  font-weight: 500;
+  color:#c9a2f1;
+  font-size:clamp(12px,1.15vw,15px);
+  letter-spacing:.30em;
+  font-weight:500;
 }
-.counts { gap: clamp(13px,2vw,26px); }
+.hero .eyebrow::before,.hero .eyebrow::after {
+  content:"";
+  display:inline-block;
+  width:clamp(24px,4.1vw,76px);
+  height:1px;
+  vertical-align:middle;
+  margin:0 17px 4px;
+  background:linear-gradient(90deg,transparent,#bd94e9);
+}
+.hero .eyebrow::after { transform:rotate(180deg); }
+.hero h1 {
+  margin:7px 0 3px;
+  font-size:clamp(40px,4.9vw,68px);
+  font-weight:480;
+  line-height:1.08;
+  letter-spacing:.052em;
+  text-shadow:0 2px 12px rgba(146,96,226,.24);
+}
+.counts { display:flex; flex-wrap:nowrap; gap:clamp(13px,1.9vw,28px); }
 .pill {
-  padding: 11px 22px;
-  gap: 7px;
-  font-size: clamp(14px,1.48vw,18px);
-  background: rgba(30,19,52,.68);
-  border: 1px solid rgba(182,139,224,.47);
-  border-radius: 17px;
+  border:1px solid transparent;
+  border-radius:19px;
+  background:
+    linear-gradient(115deg,rgba(40,26,65,.53),rgba(29,19,51,.46)) padding-box,
+    linear-gradient(120deg,rgba(175,132,218,.72),rgba(100,70,139,.43),rgba(170,121,222,.56)) border-box;
+  box-shadow:0 6px 20px rgba(0,0,0,.14);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  padding:10px clamp(17px,1.7vw,23px);
+  gap:9px;
+  font-size:clamp(15px,1.35vw,19px);
+  color:#f7edff;
 }
+.pill strong { font-size:inherit; font-weight:550; }
 .pill svg {
-  display: block;
-  width: 24px;
-  height: 24px;
-  margin-right: 3px;
-  fill: none;
-  stroke: #cc9dff;
-  stroke-width: 1.7;
-  flex: none;
+  width:29px;
+  height:29px;
+  flex:none;
+  fill:none;
+  stroke:#c99aff;
+  stroke-width:1.7;
+  filter:drop-shadow(0 0 4px rgba(175,118,255,.3));
 }
-.pill strong { font-size: inherit; font-weight: 500; }
 
-/* Invisible but accessible entry hotspot covering the existing galaxy.
-   The galaxy art is not replaced or visually altered. */
+/* Galaxy image and nebula retain original positions and sizes. */
 .galaxy-entry {
   position:absolute;
   z-index:4;
-  left:50%;
-  top:50%;
+  left:50%;top:50%;
   width:min(71vw,67vh);
   aspect-ratio:1;
-  transform: translate(-50%,-50%);
-  padding:0;
+  transform:translate(-50%,-50%);
   border:0;
-  background:transparent;
   border-radius:50%;
+  background:transparent;
   cursor:zoom-in;
 }
-#app.inside .galaxy-entry,
-#app.entering .galaxy-entry,
-#app.exiting .galaxy-entry { display:none; }
-.galaxy-entry:focus-visible { outline:2px solid #ddc1ff; outline-offset:6px; }
+#app.inside .galaxy-entry,#app.entering .galaxy-entry,#app.exiting .galaxy-entry { display:none; }
+.galaxy-entry:focus-visible { outline:2px solid #dfc6ff; outline-offset:5px; }
 
-/* Compact bottom card uses the original approved heading and description.
-   Clicking anywhere in the card opens the existing instructions dialog. */
+/* The galaxy remains visible through the translucent, softly blurred footer. */
 .footer {
-  width:min(800px,calc(100% - 34px));
+  width:min(810px,calc(100% - 34px));
   min-height:0;
-  padding:15px 24px;
-  gap:20px;
+  padding:14px 23px;
+  gap:clamp(15px,1.8vw,24px);
+  border:1.5px solid transparent;
   border-radius:24px;
-  border:1px solid rgba(200,151,250,.85);
-  background:linear-gradient(125deg,rgba(45,23,72,.91),rgba(21,12,39,.94));
-  box-shadow:0 12px 35px rgba(0,0,0,.42),0 0 14px rgba(172,100,255,.18);
+  background:
+    linear-gradient(110deg,rgba(53,31,80,.50),rgba(32,21,56,.43),rgba(25,14,45,.56)) padding-box,
+    var(--card-frame) border-box;
+  box-shadow:0 12px 32px rgba(0,0,0,.29),0 0 17px rgba(174,91,242,.22);
+  backdrop-filter:blur(13px);
+  -webkit-backdrop-filter:blur(13px);
 }
 .footer-planet {
-  width:72px;
-  height:58px;
+  width:82px;height:65px;
   flex:none;
-  stroke:#ce9dff;
-  stroke-width:2.2;
   fill:none;
-  filter:drop-shadow(0 0 5px rgba(191,125,252,.38));
+  stroke:#d1a0ff;
+  stroke-width:2.1;
+  filter:drop-shadow(0 0 5px rgba(199,133,255,.32));
 }
 .footer-rule {
-  width:1px;
-  height:54px;
-  background:rgba(197,155,232,.63);
+  width:1px;height:58px;
   flex:none;
+  background:linear-gradient(180deg,transparent,#c69eeb 20%,#cba5fa 80%,transparent);
 }
-.footer-copy { flex:1 1 auto; min-width:0; }
+.footer-copy { flex:1;min-width:0; }
 .footer-copy h2 {
-  margin:0 0 4px;
-  font-size:clamp(18px,2vw,26px);
+  margin:0 0 5px;
+  font-size:clamp(19px,1.9vw,26px);
   line-height:1.15;
   font-weight:650;
+  color:#fff7ff;
 }
 .footer-copy p {
   margin:0;
-  font-size:clamp(13px,1.15vw,16px);
-  line-height:1.34;
-  color:#f0e4fa;
+  font-size:clamp(13px,1.14vw,16px);
+  line-height:1.32;
+  color:#f2e7ff;
 }
 .footer-open {
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  background:transparent;
-  border:0;
-  border-radius:inherit;
-  cursor:pointer;
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  border:0;border-radius:inherit;
+  background:transparent;cursor:pointer;
 }
-.footer-open:focus-visible {
-  outline:3px solid #fff;
-  outline-offset:3px;
+.footer-open:focus-visible { outline:3px solid #fff;outline-offset:3px; }
+.footer:hover { box-shadow:0 12px 32px rgba(0,0,0,.3),0 0 19px rgba(198,118,255,.3); }
+#app.inside .footer,#app.entering .footer,#app.exiting .footer {
+  opacity:0;pointer-events:none;
 }
-.footer:hover { border-color:rgba(232,199,255,.96); }
-#app.inside .footer,
-#app.entering .footer,
-#app.exiting .footer { opacity:0; pointer-events:none; }
 
-@media (max-width:650px) {
+@media(max-width:650px) {
   .site-header {
-    left:clamp(12px,3vw,24px);
-    right:clamp(12px,3vw,24px);
-    top:clamp(12px,3vh,28px);
-    height:72px;
-    border-radius:24px;
+    left:clamp(10px,3vw,22px);
+    right:clamp(10px,3vw,22px);
+    top:clamp(12px,2vh,23px);
+    height:clamp(65px,8vh,76px);
+    border-radius:23px;
   }
-  .header-inner { padding-inline:18px; }
-  .icon-button { width:44px; height:44px; }
-  .hero { top:clamp(133px,17vh,190px); gap:17px; }
-  .hero h1 { font-size:clamp(30px,7.7vw,47px); letter-spacing:.025em; }
-  .eyebrow { font-size:clamp(11px,2.8vw,15px); letter-spacing:.21em; }
-  .counts { flex-wrap:nowrap; gap:10px; }
+  .header-inner { padding-inline:clamp(13px,2.8vw,20px); }
+  .icon-button,.icon-button:hover,.icon-button:active { width:43px;height:43px; }
+  .icon-button svg { width:26px;height:26px; }
+  .brand { gap:clamp(7px,1.8vw,11px); }
+  .brand-mark { width:clamp(36px,9vw,52px);max-height:31px; }
+  .brand-wordmark {
+    font-size:clamp(13px,3.25vw,18px);
+    letter-spacing:clamp(.10em,.45vw,.18em);
+  }
+  .hero {
+    top:clamp(103px,13vh,143px);
+    gap:clamp(10px,1.5vh,16px);
+    width:calc(100% - 22px);
+  }
+  .hero h1 { margin:6px 0 1px;font-size:clamp(31px,7.45vw,47px);letter-spacing:.025em; }
+  .eyebrow { font-size:clamp(10px,2.8vw,13px);letter-spacing:.20em; }
+  .hero .eyebrow::before,.hero .eyebrow::after {
+    width:clamp(12px,4vw,32px);
+    margin-inline:clamp(7px,2vw,13px);
+  }
+  .counts { gap:clamp(7px,2vw,12px); }
   .pill {
-    font-size:clamp(12px,3.1vw,16px);
-    padding:8px clamp(10px,2.7vw,17px);
+    font-size:clamp(12px,3vw,16px);
     gap:5px;
-    border-radius:16px;
+    padding:8px clamp(9px,2.6vw,15px);
+    border-radius:17px;
     white-space:nowrap;
   }
-  .pill svg { width:22px; height:22px; margin-right:0; }
-  .galaxy-entry { width:min(93vw,56vh); top:54%; }
+  .pill svg { width:clamp(20px,5.5vw,27px);height:clamp(20px,5.5vw,27px); }
+  .galaxy-entry { width:min(93vw,56vh);top:54%; }
   .footer {
-    left:50%;
-    width:calc(100% - 26px);
-    padding:13px 13px;
-    gap:12px;
-    border-radius:20px;
-    bottom:max(16px,env(safe-area-inset-bottom));
+    width:calc(100% - 28px);
+    bottom:max(15px,env(safe-area-inset-bottom));
+    padding:clamp(12px,2.8vw,17px);
+    gap:clamp(10px,2.3vw,17px);
+    border-radius:22px;
   }
-  .footer-planet { width:57px; height:51px; }
-  .footer-rule { height:50px; }
-  .footer-copy h2 { font-size:clamp(17px,4.1vw,22px); margin-bottom:5px; }
-  .footer-copy p { font-size:clamp(12px,3.15vw,14px); line-height:1.28; }
+  .footer-planet { width:clamp(50px,11vw,70px);height:clamp(46px,11vw,58px); }
+  .footer-rule { height:clamp(46px,11vw,58px); }
+  .footer-copy h2 { font-size:clamp(17px,4.2vw,23px);margin-bottom:4px; }
+  .footer-copy p { font-size:clamp(12px,3.15vw,14px);line-height:1.32; }
 }
-@media (max-width:370px) {
-  .footer-planet { width:42px; height:43px; }
+@media(max-width:360px) {
+  .brand-wordmark { font-size:12px;letter-spacing:.1em; }
+  .brand-mark { width:34px; }
+  .footer { gap:9px;padding:10px; }
+  .footer-planet { width:43px;height:44px; }
   .footer-rule { height:44px; }
-  .footer { padding:10px; gap:8px; }
   .pill { padding:7px 8px; }
-  .pill svg { width:18px; height:18px; }
 }
-@media (max-height:650px) {
-  .hero { top:calc(var(--header-height) + 34px); gap:8px; }
-  .hero h1 { font-size:clamp(26px,4.7vw,44px); }
+@media(max-height:650px) {
+  .hero { top:calc(var(--header-height) + 27px);gap:8px; }
+  .hero h1 { font-size:clamp(27px,5vw,44px); }
   .footer { padding-block:10px; }
 }
