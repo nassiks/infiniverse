@@ -28,7 +28,7 @@
     stars.push({
       x: Math.cos(angle) * r * 1.24 + (random() - 0.5) * spread * 0.38,
       y: Math.sin(angle) * r * 0.78 + (random() - 0.5) * spread * 0.38,
-      arm, size: 0.35 + Math.pow(random(), 4) * 1.75,
+      arm, size: 0.65 + Math.pow(random(), 3.2) * 2.55,
       phase: random() * TAU, speed: 0.35 + random() * 1.8,
       base: 0.28 + random() * 0.56, hue: random() < 0.13 ? 0 : 1
     });
@@ -88,7 +88,7 @@
       if (star.size > 1.45) {
         ctx.beginPath();
         ctx.fillStyle = star.hue ? 'rgba(211,157,255,' + alpha * 0.16 + ')' : 'rgba(255,226,255,' + alpha * 0.20 + ')';
-        ctx.arc(px, py, star.size * 3.6, 0, TAU); ctx.fill();
+        ctx.arc(px, py, star.size * 4.2, 0, TAU); ctx.fill();
       }
       ctx.beginPath();
       ctx.fillStyle = star.hue ? 'rgba(195,126,255,' + alpha + ')' : 'rgba(255,237,255,' + alpha * 0.94 + ')';
@@ -103,11 +103,19 @@
     }
     ctx.stroke();
 
-    const coreRadius = scale * 0.19;
+    const coreRadius = scale * 0.36;
+    const outerGlowRadius = scale * 0.58;
+    const outerGlow = ctx.createRadialGradient(cx, cy, coreRadius * 0.12, cx, cy, outerGlowRadius);
+    outerGlow.addColorStop(0, 'rgba(223,157,255,0.22)');
+    outerGlow.addColorStop(0.34, 'rgba(174,91,255,0.13)');
+    outerGlow.addColorStop(0.72, 'rgba(127,55,214,0.055)');
+    outerGlow.addColorStop(1, 'rgba(115,49,194,0)');
+    ctx.fillStyle = outerGlow;
+    ctx.fillRect(cx - outerGlowRadius, cy - outerGlowRadius, outerGlowRadius * 2, outerGlowRadius * 2);
     const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreRadius);
-    core.addColorStop(0, 'rgba(255,244,255,0.82)');
-    core.addColorStop(0.09, 'rgba(244,199,255,0.42)');
-    core.addColorStop(0.32, 'rgba(177,91,255,0.14)');
+    core.addColorStop(0, 'rgba(255,249,255,0.96)');
+    core.addColorStop(0.16, 'rgba(244,199,255,0.58)');
+    core.addColorStop(0.48, 'rgba(177,91,255,0.22)');
     core.addColorStop(1, 'rgba(115,49,194,0)');
     ctx.fillStyle = core; ctx.fillRect(cx - coreRadius, cy - coreRadius, coreRadius * 2, coreRadius * 2);
 
