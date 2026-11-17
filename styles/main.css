@@ -573,3 +573,33 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #e7
 .stage-list>div{background:rgba(114,76,150,.20);border-color:rgba(174,132,211,.30)}.help-note{background:rgba(56,38,76,.20);border:1px solid rgba(195,153,235,.3)}
 @media(max-width:650px){.site-header{left:10px;right:10px;top:max(10px,env(safe-area-inset-top));height:66px;border-radius:18px}.header-inner{grid-template-columns:40px minmax(0,1fr) 42px;gap:6px;padding-inline:10px}.brand{justify-self:center;gap:7px}.brand-mark{width:38px;max-height:29px}.brand-wordmark{font-size:clamp(12px,3.2vw,16px);letter-spacing:.11em}.search-trigger{width:42px;min-height:42px;justify-content:center;padding:0;border-radius:13px;background:transparent;border-color:transparent}.search-trigger span,.header-share{display:none}.search-trigger svg{width:22px;height:22px}.galaxy-frame,.galaxy-entry{width:min(92vw,51vh);top:41%}.nebula-haze,.nebula-front{width:min(105vw,66vh);top:41%}.hero{top:67%}.hero h1{font-size:clamp(25px,7vw,36px);letter-spacing:.14em}.footer{width:calc(100% - 28px);min-height:70px;bottom:max(13px,env(safe-area-inset-bottom));padding:10px 13px;gap:10px;border-radius:18px}.footer-planet{width:48px;height:43px}.footer-rule{height:42px}.footer-copy h2{font-size:15px}.footer-copy p{font-size:11px;line-height:1.3}.footer-arrow{width:17px;height:17px}.art-area::after{inset:7px;border-radius:19px}}
 @media(max-height:650px) and (min-width:651px){.galaxy-frame,.galaxy-entry,.nebula-haze,.nebula-front{top:38%}.hero{top:62%}}
+
+/* Apply the same 20% glass fill and gradient keyline to every surfaced control. */
+.pill,.secondary-button,.detail,.zoom,.planet-label {
+  border:1px solid transparent;
+  background:
+    linear-gradient(120deg,rgba(35,22,52,.20),rgba(20,12,34,.20)) padding-box,
+    var(--glass-border) border-box;
+  box-shadow:var(--glass-shadow);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.pill { border-radius:18px; }
+.secondary-button { border-radius:12px; }
+.detail { background:
+  linear-gradient(135deg,rgba(22,13,39,.20),rgba(13,8,27,.20)) padding-box,
+  var(--glass-border) border-box; }
+.zoom { background:
+  linear-gradient(135deg,rgba(32,18,50,.20),rgba(16,10,29,.20)) padding-box,
+  var(--glass-border) border-box; }
+.planet-label { background:
+  linear-gradient(120deg,rgba(19,11,34,.20),rgba(19,11,34,.20)) padding-box,
+  var(--glass-border) border-box; }
+.planet-label.selected { border-color:transparent;background:
+  linear-gradient(120deg,rgba(78,38,122,.30),rgba(42,20,70,.25)) padding-box,
+  linear-gradient(120deg,#fff,rgba(191,137,255,.85)) border-box; }
+@media(min-width:651px) {
+  .galaxy-frame,.galaxy-entry { width:min(58vw,48vh);top:37%; }
+  .nebula-haze,.nebula-front { width:min(72vw,64vh);top:37%; }
+  .hero { top:63%; }
+}
