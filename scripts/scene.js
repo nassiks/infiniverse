@@ -74,8 +74,9 @@ import { vs, fs } from './shaders.js';
     const BOUNDS = { x:170, y:95, minZ:-170, maxZ:240 };
     const appState = { inside:false, transition:false, selected:null, pending:null };
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    function showToast(message){const toast=ui('toast');toast.textContent=message;toast.hidden=false;window.clearTimeout(showToast.timer);showToast.timer=window.setTimeout(()=>{toast.hidden=true;},2200);}
     const ui = id => document.getElementById(id);
-    const detail = ui('detail'), search = ui('search'), help = ui('help');
+    const detail = ui('detail'), search = ui('search'), help = ui('help'), stages = ui('stages');
     const query = ui('query'), results = ui('results');
     const menuButton = ui('menu'), settings = ui('settings-panel');
     const labelLayer = ui('planet-labels');
@@ -284,12 +285,33 @@ import { vs, fs } from './shaders.js';
         const toRestore=previousFocus;previousFocus=null;
         if(toRestore&&typeof toRestore.focus==='function')toRestore.focus();
     }
-    ui('searchBtn').addEventListener('click',()=>{
-        openDialog(search,query);query.value='';showResults('');
+
+    function openSearch(){closeSettings();openDialog(search,query);query.value='';showResults('');}
+    function openHelp(){closeSettings();openDialog(help,ui('closeHelp'));}
+    function openStages(){closeSettings();openDialog(stages,ui('closeStages'));}
+    document.querySelectorAll('[data-menu-action]').forEach(button=>{
+        button.addEventListener('click',async()=>{
+            const action=button.dataset.menuAction;
+            closeSettings();
+            if(action==='home'){if(appState.inside)exit();else target={...OVERVIEW};}
+            if(action==='search')openSearch();
+            if(action==='help')openHelp();
+            if(action==='stages')openStages();
+            if(action==='share'){
+                const shareData={title:'INFINIVERSE',text:'Исследуй галактику INFINIVERSE',url:window.location.href};
+                try{
+                    if(navigator.share)await navigator.share(shareData);
+                    else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(window.location.href);showToast('Ссылка скопирована');}
+                    else showToast('Скопируй адрес страницы, чтобы поделиться');
+                }catch(error){if(error.name!=='AbortError')showToast('Не удалось открыть меню отправки');}
+            }
+        });
     });
+    ui('searchBtn').addEventListener('click',openSearch);
     ui('closeSearch').addEventListener('click',closeDialog);
-    ui('createHelp').addEventListener('click',()=>openDialog(help,ui('closeHelp')));
+    ui('createHelp').addEventListener('click',openHelp);
     ui('closeHelp').addEventListener('click',closeDialog);
+    ui('closeStages').addEventListener('click',closeDialog);
     document.addEventListener('keydown',event=>{
         if(event.key==='Escape'){
             if(activeDialog){event.preventDefault();closeDialog();}
