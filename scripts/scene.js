@@ -308,6 +308,7 @@ import { vs, fs } from './shaders.js';
         });
     });
     ui('searchBtn').addEventListener('click',openSearch);
+    ui('shareBtn').addEventListener('click',()=>document.querySelector('[data-menu-action=share]')?.click());
     ui('closeSearch').addEventListener('click',closeDialog);
     ui('createHelp').addEventListener('click',openHelp);
     ui('closeHelp').addEventListener('click',closeDialog);
