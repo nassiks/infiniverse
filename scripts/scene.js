@@ -3,8 +3,7 @@ import { vs, fs } from './shaders.js';
 (() => {
     'use strict';
     // DOM references and WebGL setup
-    const app = document.getElementById('app'), art = document.getElementById('galaxy-art');
-    art.addEventListener('error', () => { document.getElementById('error').classList.add('show'); document.getElementById('error').textContent = 'Не удалось загрузить изображение галактики: assets/galaxy/galaxy_core.png. Проверьте, что папка assets находится рядом с index.html.'; });
+    const app = document.getElementById('app');
     const planets = window.PLANETS || [];
     const canvas = document.getElementById('webgl');
     let gl;

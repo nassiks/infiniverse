@@ -497,3 +497,12 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid #e7
   .hero h1{font-size:clamp(27px,6.5vw,39px);}
 }
 @media(prefers-reduced-motion:reduce){.settings-panel,.settings-panel.open{transition:none;}}
+
+
+/* Procedural star-field galaxy replaces the static galaxy-core illustration. */
+#galaxy-canvas { display:block; width:100%; height:100%; overflow:visible; filter:drop-shadow(0 0 18px rgba(155,76,255,.16)); }
+.galaxy-frame { isolation:isolate; }
+.nebula-haze { opacity:.34; }
+.nebula-front { opacity:.16; }
+#app.animations-off #galaxy-canvas { filter:none; }
+@media(prefers-reduced-motion:reduce) { #galaxy-canvas { filter:none; } }
