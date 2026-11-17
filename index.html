@@ -18,7 +18,7 @@
   <div class="art-area" id="art-area" aria-hidden="true">
     <div class="nebula-haze"></div>
     <div class="galaxy-frame">
-      <img id="galaxy-art" src="assets/galaxy/galaxy_core.png" alt="">
+      <canvas id="galaxy-canvas" aria-label="Анимированная спиральная галактика из звёзд и созвездий"></canvas>
     </div>
     <div class="nebula-front"></div>
   </div>
@@ -132,6 +132,7 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </main>
 <script src="data/planets.js"></script>
+<script type="module" src="scripts/galaxy.js"></script>
 <script src="scripts/scene.js" type="module"></script>
 </body>
 </html>
